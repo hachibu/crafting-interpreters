@@ -89,7 +89,13 @@ impl Scanner {
             '\t' => (),
             '\n' => self.line += 1,
             '"' => self.scan_string(),
-            _ => println!("{}: \"{}\"", "Unexpected character", c)
+            c => {
+                if c.is_digit(10) {
+                    self.scan_number()
+                } else {
+                    println!("{}: \"{}\"", "Unexpected character", c)
+                }
+            }
         }
     }
 
@@ -131,6 +137,14 @@ impl Scanner {
         }
     }
 
+    fn peek_next(&self) -> char {
+        if self.current + 1 >= self.source.len() {
+            '\0'
+        } else {
+            self.nth_char(self.current + 1)
+        }
+    }
+
     fn scan_string(&mut self) {
         while self.peek() != '"' && !self.is_at_end() {
             if self.peek() == '\n' {
@@ -151,5 +165,25 @@ impl Scanner {
             None => String::from("")
         };
         self.add_token(TokenType::String(value))
+    }
+
+    fn scan_number(&mut self) {
+        while self.peek().is_digit(10) {
+            self.advance();
+        }
+
+        if self.peek() == '.' && self.peek_next().is_digit(10) {
+            self.advance();
+
+            while self.peek().is_digit(10) {
+                self.advance();
+            }
+        }
+
+        let value = self.source.get(self.start..self.current)
+                               .unwrap()
+                               .parse::<f64>()
+                               .unwrap();
+        self.add_token(TokenType::Number(value));
     }
 }
