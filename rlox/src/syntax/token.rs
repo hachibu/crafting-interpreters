@@ -1,6 +1,6 @@
 #[derive(Debug)]
 pub struct Token {
-    pub ty: TokenType,
+    pub ty: Ty,
     pub lexeme: Option<String>,
     pub position: Position
 }
@@ -8,14 +8,14 @@ pub struct Token {
 impl_display_trait!(Token);
 
 impl Token {
-    pub fn new(ty: TokenType, lexeme: Option<String>, position: Position) -> Token {
+    pub fn new(ty: Ty, lexeme: Option<String>, position: Position) -> Token {
         Token { ty, lexeme, position }
     }
 }
 
 #[allow(dead_code)]
 #[derive(Debug)]
-pub enum TokenType {
+pub enum Ty {
   LeftParen,
   RightParen,
   LeftBrace,
@@ -57,7 +57,7 @@ pub enum TokenType {
   Eof
 }
 
-impl_display_trait!(TokenType);
+impl_display_trait!(Ty);
 
 #[derive(Debug)]
 pub struct Position {
