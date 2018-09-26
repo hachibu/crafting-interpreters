@@ -88,6 +88,7 @@ impl Scanner {
             '\r' => (),
             '\t' => (),
             '\n' => self.line += 1,
+            '"' => self.scan_string(),
             _ => println!("{}: \"{}\"", "Unexpected character", c)
         }
     }
@@ -98,13 +99,16 @@ impl Scanner {
     }
 
     fn add_token(&mut self, ty: TokenType) {
-        let lexeme = match self.source.get(self.start..self.current) {
-            Some(s) => Some(String::from(s)),
-            None => None
+        let lexeme = match ty {
+            TokenType::Eof => None,
+            _ =>
+                match self.source.get(self.start..self.current) {
+                    Some(s) => Some(String::from(s)),
+                    None => None
+                }
         };
         let token = Token::new(ty, lexeme, self.line);
 
-        self.current += 1;
         self.tokens.push(token)
     }
 
@@ -125,5 +129,27 @@ impl Scanner {
         } else {
             self.nth_char(self.current)
         }
+    }
+
+    fn scan_string(&mut self) {
+        while self.peek() != '"' && !self.is_at_end() {
+            if self.peek() == '\n' {
+                self.line += 1
+            }
+            self.advance();
+        }
+
+        if self.is_at_end() {
+            println!("{}", "Unterminated string.");
+            return
+        }
+
+        self.advance();
+
+        let value = match self.source.get(self.start + 1..self.current - 1) {
+            Some(s) => String::from(s),
+            None => String::from("")
+        };
+        self.add_token(TokenType::String(value))
     }
 }
