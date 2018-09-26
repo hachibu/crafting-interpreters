@@ -2,14 +2,14 @@
 pub struct Token {
     pub ty: TokenType,
     pub lexeme: Option<String>,
-    pub line: usize
+    pub position: Position
 }
 
 impl_display_trait!(Token);
 
 impl Token {
-    pub fn new(ty: TokenType, lexeme: Option<String>, line: usize) -> Token {
-        Token { ty, lexeme, line }
+    pub fn new(ty: TokenType, lexeme: Option<String>, position: Position) -> Token {
+        Token { ty, lexeme, position }
     }
 }
 
@@ -58,3 +58,17 @@ pub enum TokenType {
 }
 
 impl_display_trait!(TokenType);
+
+#[derive(Debug)]
+pub struct Position {
+    pub line: usize,
+    pub column: usize
+}
+
+impl_display_trait!(Position);
+
+impl Position {
+    pub fn new(line: usize, column: usize) -> Position {
+        Position { line, column }
+    }
+}

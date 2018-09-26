@@ -12,6 +12,6 @@ fn main() {
     ");
 
     for token in scanner.scan_tokens() {
-        println!("{:?}", token);
+        println!("{:#?}", token);
     }
 }

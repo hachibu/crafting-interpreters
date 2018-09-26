@@ -6,7 +6,8 @@ pub struct Scanner {
     tokens: Vec<Token>,
     start: usize,
     current: usize,
-    line: usize
+    line: usize,
+    column: usize
 }
 
 impl_display_trait!(Scanner);
@@ -18,7 +19,8 @@ impl Scanner {
             tokens: Vec::new(),
             start: 0,
             current: 0,
-            line: 1
+            line: 1,
+            column: 1
         }
     }
 
@@ -87,7 +89,10 @@ impl Scanner {
             ' ' => (),
             '\r' => (),
             '\t' => (),
-            '\n' => self.line += 1,
+            '\n' => {
+                self.column = 0;
+                self.line += 1
+            },
             '"' => self.scan_string(),
             c => {
                 if c.is_digit(10) {
@@ -101,6 +106,7 @@ impl Scanner {
 
     fn advance(&mut self) -> char {
         self.current += 1;
+        self.column += 1;
         self.nth_char(self.current - 1)
     }
 
@@ -109,11 +115,14 @@ impl Scanner {
             TokenType::Eof => None,
             _ =>
                 match self.source.get(self.start..self.current) {
-                    Some(s) => Some(String::from(s)),
+                    Some(s) => {
+                        self.column -= s.len() - 1;
+                        Some(String::from(s))
+                    },
                     None => None
                 }
         };
-        let token = Token::new(ty, lexeme, self.line);
+        let token = Token::new(ty, lexeme, Position::new(self.line, self.column));
 
         self.tokens.push(token)
     }
@@ -148,6 +157,7 @@ impl Scanner {
     fn scan_string(&mut self) {
         while self.peek() != '"' && !self.is_at_end() {
             if self.peek() == '\n' {
+                self.column = 0;
                 self.line += 1
             }
             self.advance();
