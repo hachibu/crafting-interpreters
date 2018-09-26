@@ -111,19 +111,9 @@ impl Scanner {
     }
 
     fn add_token(&mut self, ty: Ty) {
-        let lexeme = match ty {
-            Ty::Eof => None,
-            _ =>
-                match self.source.get(self.start..self.current) {
-                    Some(s) => {
-                        self.column -= s.len() - 1;
-                        Some(String::from(s))
-                    },
-                    None => None
-                }
-        };
+        let lexeme = String::from(self.source.get(self.start..self.current).unwrap());
+        self.column -= lexeme.len() - 1;
         let token = Token::new(ty, lexeme, Position::new(self.line, self.column));
-
         self.tokens.push(token)
     }
 
