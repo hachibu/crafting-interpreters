@@ -1,4 +1,3 @@
-use position::Position;
 use std::collections::HashMap;
 use syntax::token::*;
 
@@ -8,8 +7,7 @@ pub struct Scanner<'a> {
     tokens: Vec<Token>,
     keywords: HashMap<&'a str, Ty>,
     prev: usize,
-    curr: usize,
-    position: Position
+    curr: usize
 }
 
 impl<'a> Scanner<'a> {
@@ -38,8 +36,7 @@ impl<'a> Scanner<'a> {
             tokens: Vec::new(),
             keywords: keywords.iter().cloned().collect(),
             prev: 0,
-            curr: 0,
-            position: Position { line: 1, column: 1 }
+            curr: 0
         };
 
         scanner
@@ -100,64 +97,48 @@ impl<'a> Scanner<'a> {
                 } else {
                     self.add_token(Ty::Slash)
                 },
-            ' ' => (),
-            '\r' => (),
-            '\t' => (),
-            '\n' => {
-                self.position.column = 0;
-                self.position.line += 1
-            },
             '"' => self.scan_string(),
             c => {
-                if c.is_digit(10) {
+                if c.is_whitespace() {
+                    return
+                } else if c.is_digit(10) {
                     self.scan_number()
                 } else if c.is_alphabetic() {
                     self.scan_identifier()
                 } else {
-                    println!("{}: \"{}\"", "Unexpected character", c)
+                    println!("Unexpected character: {}.", c);
+                    return
                 }
             }
         }
     }
 
     fn scan_single_line_comment(&mut self) {
-        while !self.peek_char('\n') {
+        while !self.eof() && !self.peek_char('\n') {
             self.advance();
         }
     }
 
     fn scan_multi_line_comment(&mut self) {
-        while !self.eof() && !(self.peek_nth(0) == '*' &&
-                               self.peek_nth(1) == '/') {
-
-            if self.match_char('\n') {
-                self.position.column = 0;
-                self.position.line += 1;
-            }
-
+        while !self.eof() && !(self.peek() == '*' && self.peek_nth(1) == '/') {
             self.advance();
         }
 
         if !(self.match_char('*') && self.match_char('/')) {
-            println!("{}", "Unterminated multi-line comment.");
+            println!("Unterminated multi-line comment.");
+            return
         }
     }
 
     fn scan_string(&mut self) {
-        while !self.peek_char('"') {
-            if self.peek_char('\n') {
-                self.position.column = 0;
-                self.position.line += 1
-            }
+        while !self.eof() && !self.peek_char('"') {
             self.advance();
         }
 
-        if self.eof() {
-            println!("{}", "Unterminated string.");
+        if !self.match_char('"') {
+            println!("Unterminated string.");
             return
         }
-
-        self.advance();
 
         let value = match self.source.get(self.prev + 1..self.curr - 1) {
             Some(s) => String::from(s),
@@ -167,29 +148,27 @@ impl<'a> Scanner<'a> {
     }
 
     fn scan_number(&mut self) {
-        while self.peek().is_digit(10) {
+        while !self.eof() && self.peek().is_digit(10) {
             self.advance();
         }
 
         if self.peek_char('.') && self.peek_nth(1).is_digit(10) {
             self.advance();
-            while self.peek().is_digit(10) {
+            while !self.eof() && self.peek().is_digit(10) {
                 self.advance();
             }
         }
 
-        let value = self.source.get(self.prev..self.curr).unwrap()
-                               .parse::<f64>().unwrap();
+        let value = self.curr_lexeme().parse::<f64>().unwrap();
         self.add_token(Ty::Number(value));
     }
 
     fn scan_identifier(&mut self) {
-        while self.peek().is_alphanumeric() {
+        while !self.eof() && self.peek().is_alphanumeric() {
             self.advance();
         }
-        let value = self.source.get(self.prev..self.curr).unwrap()
-                               .to_string();
 
+        let value = self.curr_lexeme();
         let token = match self.keywords.get(value.as_str()) {
             Some(ty) => (*ty).clone(),
             None => Ty::Identifier(value)
@@ -199,14 +178,12 @@ impl<'a> Scanner<'a> {
     }
 
     fn add_token(&mut self, ty: Ty) {
-        let lexeme = match self.source.get(self.prev..self.curr) {
-            Some(value) => {
-                self.position.column -= value.len() - 1;
-                String::from(value)
-            },
-            None => String::from("")
-        };
-        self.tokens.push(Token { ty, lexeme, position: self.position })
+        let lexeme = self.curr_lexeme();
+        self.tokens.push(Token { ty, lexeme, offset: self.curr })
+    }
+
+    fn curr_lexeme(&self) -> String {
+        self.source.get(self.prev..self.curr).unwrap_or("").to_string()
     }
 
     fn eof(&self) -> bool {
@@ -219,7 +196,6 @@ impl<'a> Scanner<'a> {
 
     fn advance(&mut self) -> char {
         self.curr += 1;
-        self.position.column += 1;
         self.nth_char(self.curr - 1)
     }
 
@@ -236,7 +212,7 @@ impl<'a> Scanner<'a> {
     }
 
     fn peek_char(&self, c: char) -> bool {
-        !self.eof() && self.peek() == c
+       self.peek() == c
     }
 
     fn match_char(&mut self, c: char) -> bool {

@@ -1,10 +1,8 @@
-use position::Position;
-
 #[derive(Clone, Debug, PartialEq)]
 pub struct Token {
     pub ty: Ty,
-    pub lexeme: Lexeme,
-    pub position: Position
+    pub lexeme: String,
+    pub offset: usize
 }
 
 #[allow(dead_code)]
@@ -50,5 +48,3 @@ pub enum Ty {
   While,
   Eof
 }
-
-pub type Lexeme = String;
