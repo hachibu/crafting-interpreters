@@ -47,7 +47,6 @@ impl<'a> Scanner<'a> {
             self.prev = self.curr;
             self.scan_token();
         }
-        self.advance();
         self.add_token(Ty::Eof);
         self.tokens.clone()
     }
@@ -55,6 +54,7 @@ impl<'a> Scanner<'a> {
     fn scan_token(&mut self) -> () {
         let c = self.advance();
         match c {
+            '"' => self.scan_string(),
             '(' => self.add_token(Ty::LeftParen),
             ')' => self.add_token(Ty::RightParen),
             '{' => self.add_token(Ty::LeftBrace),
@@ -97,8 +97,7 @@ impl<'a> Scanner<'a> {
                 } else {
                     self.add_token(Ty::Slash)
                 },
-            '"' => self.scan_string(),
-            c => {
+            _ => {
                 if c.is_whitespace() {
                     return
                 } else if c.is_digit(10) {
@@ -140,10 +139,8 @@ impl<'a> Scanner<'a> {
             return
         }
 
-        let value = match self.source.get(self.prev + 1..self.curr - 1) {
-            Some(s) => String::from(s),
-            None => String::from("")
-        };
+        let value = self.lexeme().trim_matches('"').to_string();
+
         self.add_token(Ty::String(value))
     }
 
@@ -159,7 +156,8 @@ impl<'a> Scanner<'a> {
             }
         }
 
-        let value = self.curr_lexeme().parse::<f64>().unwrap();
+        let value = self.lexeme().parse::<f64>().unwrap();
+
         self.add_token(Ty::Number(value));
     }
 
@@ -168,7 +166,7 @@ impl<'a> Scanner<'a> {
             self.advance();
         }
 
-        let value = self.curr_lexeme();
+        let value = self.lexeme();
         let token = match self.keywords.get(value.as_str()) {
             Some(ty) => (*ty).clone(),
             None => Ty::Identifier(value)
@@ -178,11 +176,13 @@ impl<'a> Scanner<'a> {
     }
 
     fn add_token(&mut self, ty: Ty) {
-        let lexeme = self.curr_lexeme();
-        self.tokens.push(Token { ty, lexeme, offset: self.curr })
+        let length = self.curr - self.prev;
+        let offset = self.curr;
+
+        self.tokens.push(Token { ty, length, offset });
     }
 
-    fn curr_lexeme(&self) -> String {
+    fn lexeme(&self) -> String {
         self.source.get(self.prev..self.curr).unwrap_or("").to_string()
     }
 

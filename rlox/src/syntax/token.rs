@@ -1,11 +1,10 @@
 #[derive(Clone, Debug, PartialEq)]
 pub struct Token {
     pub ty: Ty,
-    pub lexeme: String,
+    pub length: usize,
     pub offset: usize
 }
 
-#[allow(dead_code)]
 #[derive(Clone, Debug, PartialEq)]
 pub enum Ty {
   LeftParen,
