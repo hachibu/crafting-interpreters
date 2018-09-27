@@ -94,9 +94,9 @@ impl<'a> Scanner<'a> {
                 },
             '/' =>
                 if self.match_char('/') {
-                    while !self.peek_char('\n') {
-                        self.advance();
-                    }
+                    self.scan_single_line_comment();
+                } else if self.match_char('*') {
+                    self.scan_multi_line_comment();
                 } else {
                     self.add_token(Ty::Slash)
                 },
@@ -117,6 +117,29 @@ impl<'a> Scanner<'a> {
                     println!("{}: \"{}\"", "Unexpected character", c)
                 }
             }
+        }
+    }
+
+    fn scan_single_line_comment(&mut self) {
+        while !self.peek_char('\n') {
+            self.advance();
+        }
+    }
+
+    fn scan_multi_line_comment(&mut self) {
+        while !self.eof() && !(self.peek_nth(0) == '*' &&
+                               self.peek_nth(1) == '/') {
+
+            if self.match_char('\n') {
+                self.position.column = 0;
+                self.position.line += 1;
+            }
+
+            self.advance();
+        }
+
+        if !(self.match_char('*') && self.match_char('/')) {
+            println!("{}", "Unterminated multi-line comment.");
         }
     }
 
