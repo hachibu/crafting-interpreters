@@ -1,24 +1,48 @@
 use position::Position;
+use std::collections::HashMap;
 use syntax::token::*;
 
 #[derive(Debug)]
-pub struct Scanner {
+pub struct Scanner<'a> {
     pub source: String,
     tokens: Vec<Token>,
+    keywords: HashMap<&'a str, Ty>,
     prev: usize,
     curr: usize,
     position: Position
 }
 
-impl Scanner {
+impl<'a> Scanner<'a> {
     pub fn new(source : &str) -> Scanner {
-        Scanner {
+        let keywords = [
+            ("and",    Ty::And),
+            ("class",  Ty::Class),
+            ("else",   Ty::Else),
+            ("false",  Ty::False),
+            ("for",    Ty::For),
+            ("fun",    Ty::Fun),
+            ("if",     Ty::If),
+            ("nil",    Ty::Nil),
+            ("or",     Ty::Or),
+            ("print",  Ty::Print),
+            ("return", Ty::Return),
+            ("super",  Ty::Super),
+            ("this",   Ty::This),
+            ("true",   Ty::True),
+            ("var",    Ty::Var),
+            ("while",  Ty::While)
+        ];
+
+        let scanner = Scanner {
             source: String::from(source),
             tokens: Vec::new(),
+            keywords: keywords.iter().cloned().collect(),
             prev: 0,
             curr: 0,
             position: Position { line: 1, column: 1 }
-        }
+        };
+
+        scanner
     }
 
     pub fn scan_tokens(mut self) -> Vec<Token> {
@@ -70,7 +94,7 @@ impl Scanner {
                 },
             '/' =>
                 if self.match_char('/') {
-                    while self.peek(0) != '\n' && !self.eof() {
+                    while !self.peek_char('\n') {
                         self.advance();
                     }
                 } else {
@@ -95,8 +119,8 @@ impl Scanner {
     }
 
     fn scan_string(&mut self) {
-        while self.peek(0) != '"' && !self.eof() {
-            if self.peek(0) == '\n' {
+        while !self.peek_char('"') {
+            if self.peek_char('\n') {
                 self.position.column = 0;
                 self.position.line += 1
             }
@@ -118,22 +142,19 @@ impl Scanner {
     }
 
     fn scan_number(&mut self) {
-        while self.peek(0).is_digit(10) {
+        while self.peek().is_digit(10) {
             self.advance();
         }
 
-        if self.peek(0) == '.' && self.peek(1).is_digit(10) {
+        if self.peek_char('.') && self.peek_nth(1).is_digit(10) {
             self.advance();
-
-            while self.peek(0).is_digit(10) {
+            while self.peek().is_digit(10) {
                 self.advance();
             }
         }
 
-        let value = self.source.get(self.prev..self.curr)
-                               .unwrap()
-                               .parse::<f64>()
-                               .unwrap();
+        let value = self.source.get(self.prev..self.curr).unwrap()
+                               .parse::<f64>().unwrap();
         self.add_token(Ty::Number(value));
     }
 
@@ -162,23 +183,28 @@ impl Scanner {
         self.nth_char(self.curr - 1)
     }
 
-    fn peek(&self, lookahead: usize) -> char {
-        let next = self.curr + lookahead;
-        if next >= self.source.len() {
+    fn peek_nth(&self, n: usize) -> char {
+        if self.curr + n >= self.source.len() {
             '\0'
         } else {
-            self.nth_char(next)
+            self.nth_char(self.curr + n)
         }
     }
 
-    fn match_char(&mut self, expected: char) -> bool {
-        if self.eof() {
-            false
-        } else if self.peek(0) != expected {
-            false
-        } else {
+    fn peek(&self) -> char {
+        self.peek_nth(0)
+    }
+
+    fn peek_char(&self, c: char) -> bool {
+        !self.eof() && self.peek() == c
+    }
+
+    fn match_char(&mut self, c: char) -> bool {
+        if self.peek_char(c) {
             self.curr += 1;
             true
+        } else {
+            false
         }
     }
 }
