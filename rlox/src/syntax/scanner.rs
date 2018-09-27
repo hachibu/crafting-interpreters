@@ -111,6 +111,8 @@ impl<'a> Scanner<'a> {
             c => {
                 if c.is_digit(10) {
                     self.scan_number()
+                } else if c.is_alphabetic() {
+                    self.scan_identifier()
                 } else {
                     println!("{}: \"{}\"", "Unexpected character", c)
                 }
@@ -156,6 +158,21 @@ impl<'a> Scanner<'a> {
         let value = self.source.get(self.prev..self.curr).unwrap()
                                .parse::<f64>().unwrap();
         self.add_token(Ty::Number(value));
+    }
+
+    fn scan_identifier(&mut self) {
+        while self.peek().is_alphanumeric() {
+            self.advance();
+        }
+        let value = self.source.get(self.prev..self.curr).unwrap()
+                               .to_string();
+
+        let token = match self.keywords.get(value.as_str()) {
+            Some(ty) => (*ty).clone(),
+            None => Ty::Identifier(value)
+        };
+
+        self.add_token(token);
     }
 
     fn add_token(&mut self, ty: Ty) {

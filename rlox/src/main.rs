@@ -8,7 +8,10 @@ fn main() {
         (()){}
         !*+-/=<> <= ==
         \"rlox\"
-        1 1.2");
+        1 1.2
+        class
+        hello
+    ");
 
     for token in scanner.scan_tokens() {
         println!("{:?}", token);
