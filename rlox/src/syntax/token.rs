@@ -1,20 +1,14 @@
-#[derive(Debug)]
+use position::Position;
+
+#[derive(Clone, Debug, PartialEq)]
 pub struct Token {
     pub ty: Ty,
     pub lexeme: Lexeme,
     pub position: Position
 }
 
-impl_display_trait!(Token);
-
-impl Token {
-    pub fn new(ty: Ty, lexeme: Lexeme, position: Position) -> Token {
-        Token { ty, lexeme, position }
-    }
-}
-
 #[allow(dead_code)]
-#[derive(Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Ty {
   LeftParen,
   RightParen,
@@ -57,20 +51,4 @@ pub enum Ty {
   Eof
 }
 
-impl_display_trait!(Ty);
-
 pub type Lexeme = String;
-
-#[derive(Debug)]
-pub struct Position {
-    pub line: usize,
-    pub column: usize
-}
-
-impl_display_trait!(Position);
-
-impl Position {
-    pub fn new(line: usize, column: usize) -> Position {
-        Position { line, column }
-    }
-}

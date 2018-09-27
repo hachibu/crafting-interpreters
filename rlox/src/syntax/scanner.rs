@@ -1,40 +1,38 @@
+use position::Position;
 use syntax::token::*;
 
 #[derive(Debug)]
 pub struct Scanner {
     pub source: String,
     tokens: Vec<Token>,
-    start: usize,
-    current: usize,
-    line: usize,
-    column: usize
+    prev: usize,
+    curr: usize,
+    position: Position
 }
-
-impl_display_trait!(Scanner);
 
 impl Scanner {
     pub fn new(source : &str) -> Scanner {
         Scanner {
             source: String::from(source),
             tokens: Vec::new(),
-            start: 0,
-            current: 0,
-            line: 1,
-            column: 1
+            prev: 0,
+            curr: 0,
+            position: Position { line: 1, column: 1 }
         }
     }
 
     pub fn scan_tokens(mut self) -> Vec<Token> {
         while !self.is_at_end() {
-            self.start = self.current;
+            self.prev = self.curr;
             self.scan_token();
         }
+        self.advance();
         self.add_token(Ty::Eof);
-        self.tokens
+        self.tokens.clone()
     }
 
     fn is_at_end(&self) -> bool {
-        self.current >= self.source.len()
+        self.curr >= self.source.len()
     }
 
     fn nth_char(&self, n: usize) -> char {
@@ -90,8 +88,8 @@ impl Scanner {
             '\r' => (),
             '\t' => (),
             '\n' => {
-                self.column = 0;
-                self.line += 1
+                self.position.column = 0;
+                self.position.line += 1
             },
             '"' => self.scan_string(),
             c => {
@@ -105,25 +103,29 @@ impl Scanner {
     }
 
     fn advance(&mut self) -> char {
-        self.current += 1;
-        self.column += 1;
-        self.nth_char(self.current - 1)
+        self.curr += 1;
+        self.position.column += 1;
+        self.nth_char(self.curr - 1)
     }
 
     fn add_token(&mut self, ty: Ty) {
-        let lexeme = String::from(self.source.get(self.start..self.current).unwrap());
-        self.column -= lexeme.len() - 1;
-        let token = Token::new(ty, lexeme, Position::new(self.line, self.column));
-        self.tokens.push(token)
+        let lexeme = match self.source.get(self.prev..self.curr) {
+            Some(value) => {
+                self.position.column -= value.len() - 1;
+                String::from(value)
+            },
+            None => String::from("")
+        };
+        self.tokens.push(Token { ty, lexeme, position: self.position })
     }
 
     fn match_char(&mut self, expected: char) -> bool {
         if self.is_at_end() {
             false
-        } else if self.nth_char(self.current) != expected {
+        } else if self.nth_char(self.curr) != expected {
             false
         } else {
-            self.current += 1;
+            self.curr += 1;
             true
         }
     }
@@ -132,23 +134,23 @@ impl Scanner {
         if self.is_at_end() {
             '\0'
         } else {
-            self.nth_char(self.current)
+            self.nth_char(self.curr)
         }
     }
 
     fn peek_next(&self) -> char {
-        if self.current + 1 >= self.source.len() {
+        if self.curr + 1 >= self.source.len() {
             '\0'
         } else {
-            self.nth_char(self.current + 1)
+            self.nth_char(self.curr + 1)
         }
     }
 
     fn scan_string(&mut self) {
         while self.peek() != '"' && !self.is_at_end() {
             if self.peek() == '\n' {
-                self.column = 0;
-                self.line += 1
+                self.position.column = 0;
+                self.position.line += 1
             }
             self.advance();
         }
@@ -160,7 +162,7 @@ impl Scanner {
 
         self.advance();
 
-        let value = match self.source.get(self.start + 1..self.current - 1) {
+        let value = match self.source.get(self.prev + 1..self.curr - 1) {
             Some(s) => String::from(s),
             None => String::from("")
         };
@@ -180,7 +182,7 @@ impl Scanner {
             }
         }
 
-        let value = self.source.get(self.start..self.current)
+        let value = self.source.get(self.prev..self.curr)
                                .unwrap()
                                .parse::<f64>()
                                .unwrap();
