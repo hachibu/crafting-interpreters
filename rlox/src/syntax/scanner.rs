@@ -22,21 +22,13 @@ impl Scanner {
     }
 
     pub fn scan_tokens(mut self) -> Vec<Token> {
-        while !self.is_at_end() {
+        while !self.eof() {
             self.prev = self.curr;
             self.scan_token();
         }
         self.advance();
         self.add_token(Ty::Eof);
         self.tokens.clone()
-    }
-
-    fn is_at_end(&self) -> bool {
-        self.curr >= self.source.len()
-    }
-
-    fn nth_char(&self, n: usize) -> char {
-        self.source.chars().nth(n).unwrap_or('\0')
     }
 
     fn scan_token(&mut self) -> () {
@@ -78,7 +70,7 @@ impl Scanner {
                 },
             '/' =>
                 if self.match_char('/') {
-                    while self.peek() != '\n' && !self.is_at_end() {
+                    while self.peek(0) != '\n' && !self.eof() {
                         self.advance();
                     }
                 } else {
@@ -102,60 +94,16 @@ impl Scanner {
         }
     }
 
-    fn advance(&mut self) -> char {
-        self.curr += 1;
-        self.position.column += 1;
-        self.nth_char(self.curr - 1)
-    }
-
-    fn add_token(&mut self, ty: Ty) {
-        let lexeme = match self.source.get(self.prev..self.curr) {
-            Some(value) => {
-                self.position.column -= value.len() - 1;
-                String::from(value)
-            },
-            None => String::from("")
-        };
-        self.tokens.push(Token { ty, lexeme, position: self.position })
-    }
-
-    fn match_char(&mut self, expected: char) -> bool {
-        if self.is_at_end() {
-            false
-        } else if self.nth_char(self.curr) != expected {
-            false
-        } else {
-            self.curr += 1;
-            true
-        }
-    }
-
-    fn peek(&self) -> char {
-        if self.is_at_end() {
-            '\0'
-        } else {
-            self.nth_char(self.curr)
-        }
-    }
-
-    fn peek_next(&self) -> char {
-        if self.curr + 1 >= self.source.len() {
-            '\0'
-        } else {
-            self.nth_char(self.curr + 1)
-        }
-    }
-
     fn scan_string(&mut self) {
-        while self.peek() != '"' && !self.is_at_end() {
-            if self.peek() == '\n' {
+        while self.peek(0) != '"' && !self.eof() {
+            if self.peek(0) == '\n' {
                 self.position.column = 0;
                 self.position.line += 1
             }
             self.advance();
         }
 
-        if self.is_at_end() {
+        if self.eof() {
             println!("{}", "Unterminated string.");
             return
         }
@@ -170,14 +118,14 @@ impl Scanner {
     }
 
     fn scan_number(&mut self) {
-        while self.peek().is_digit(10) {
+        while self.peek(0).is_digit(10) {
             self.advance();
         }
 
-        if self.peek() == '.' && self.peek_next().is_digit(10) {
+        if self.peek(0) == '.' && self.peek(1).is_digit(10) {
             self.advance();
 
-            while self.peek().is_digit(10) {
+            while self.peek(0).is_digit(10) {
                 self.advance();
             }
         }
@@ -187,5 +135,50 @@ impl Scanner {
                                .parse::<f64>()
                                .unwrap();
         self.add_token(Ty::Number(value));
+    }
+
+    fn add_token(&mut self, ty: Ty) {
+        let lexeme = match self.source.get(self.prev..self.curr) {
+            Some(value) => {
+                self.position.column -= value.len() - 1;
+                String::from(value)
+            },
+            None => String::from("")
+        };
+        self.tokens.push(Token { ty, lexeme, position: self.position })
+    }
+
+    fn eof(&self) -> bool {
+        self.curr >= self.source.len()
+    }
+
+    fn nth_char(&self, n: usize) -> char {
+        self.source.chars().nth(n).unwrap_or('\0')
+    }
+
+    fn advance(&mut self) -> char {
+        self.curr += 1;
+        self.position.column += 1;
+        self.nth_char(self.curr - 1)
+    }
+
+    fn peek(&self, lookahead: usize) -> char {
+        let next = self.curr + lookahead;
+        if next >= self.source.len() {
+            '\0'
+        } else {
+            self.nth_char(next)
+        }
+    }
+
+    fn match_char(&mut self, expected: char) -> bool {
+        if self.eof() {
+            false
+        } else if self.peek(0) != expected {
+            false
+        } else {
+            self.curr += 1;
+            true
+        }
     }
 }
