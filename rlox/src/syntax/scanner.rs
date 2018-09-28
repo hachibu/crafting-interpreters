@@ -1,16 +1,16 @@
 use std::collections::HashMap;
 use syntax::token::*;
 
-#[derive(Debug)]
-pub struct Scanner {
-    pub source: String,
-    tokens: Vec<Token>,
-    keywords: HashMap<&'static str, Ty>,
+#[derive(Clone, Debug)]
+pub struct Scanner<'a> {
+    pub source: &'a str,
+    tokens: Vec<Token<'a>>,
+    keywords: HashMap<&'a str, Ty<'a>>,
     prev: usize,
     curr: usize
 }
 
-impl Scanner {
+impl<'a> Scanner<'a> {
     pub fn new(source: &str) -> Scanner {
         let keywords = [
             ("and",    Ty::And),
@@ -32,7 +32,7 @@ impl Scanner {
         ].iter().cloned().collect();
 
         Scanner {
-            source: String::from(source),
+            source: source,
             tokens: Vec::new(),
             keywords: keywords,
             prev: 0,
@@ -40,13 +40,13 @@ impl Scanner {
         }
     }
 
-    pub fn scan_tokens(mut self) -> Vec<Token> {
+    pub fn scan_tokens(&mut self) -> &Vec<Token<'a>> {
         while !self.eof() {
             self.prev = self.curr;
             self.scan_token();
         }
         self.add_token(Ty::Eof);
-        self.tokens.clone()
+        &self.tokens
     }
 
     fn scan_token(&mut self) -> () {
@@ -137,7 +137,7 @@ impl Scanner {
             return
         }
 
-        let value = self.lexeme().trim_matches('"').to_string();
+        let value = self.lexeme().trim_matches('"');
 
         self.add_token(Ty::String(value))
     }
@@ -165,7 +165,7 @@ impl Scanner {
         }
 
         let value = self.lexeme();
-        let token = match self.keywords.get(value.as_str()) {
+        let token = match self.keywords.get(value) {
             Some(ty) => (*ty).clone(),
             None => Ty::Identifier(value)
         };
@@ -173,15 +173,15 @@ impl Scanner {
         self.add_token(token);
     }
 
-    fn add_token(&mut self, ty: Ty) {
+    fn add_token(&mut self, ty: Ty<'a>) {
         let length = self.curr - self.prev;
         let offset = self.curr;
 
         self.tokens.push(Token { ty, length, offset });
     }
 
-    fn lexeme(&self) -> String {
-        self.source.get(self.prev..self.curr).unwrap_or("").to_string()
+    fn lexeme(&self) -> &'a str {
+        self.source.get(self.prev..self.curr).unwrap_or("")
     }
 
     fn eof(&self) -> bool {

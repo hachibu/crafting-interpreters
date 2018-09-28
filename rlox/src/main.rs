@@ -3,7 +3,7 @@ mod syntax;
 use syntax::*;
 
 fn main() {
-    let scanner = Scanner::new("1
+    let mut scanner = Scanner::new("1
         2.5
         /*
         * multi-line comment
