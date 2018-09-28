@@ -2,16 +2,16 @@ use std::collections::HashMap;
 use syntax::token::*;
 
 #[derive(Debug)]
-pub struct Scanner<'a> {
+pub struct Scanner {
     pub source: String,
     tokens: Vec<Token>,
-    keywords: HashMap<&'a str, Ty>,
+    keywords: HashMap<&'static str, Ty>,
     prev: usize,
     curr: usize
 }
 
-impl<'a> Scanner<'a> {
-    pub fn new(source : &str) -> Scanner {
+impl Scanner {
+    pub fn new(source: &str) -> Scanner {
         let keywords = [
             ("and",    Ty::And),
             ("class",  Ty::Class),
@@ -29,17 +29,15 @@ impl<'a> Scanner<'a> {
             ("true",   Ty::True),
             ("var",    Ty::Var),
             ("while",  Ty::While)
-        ];
+        ].iter().cloned().collect();
 
-        let scanner = Scanner {
+        Scanner {
             source: String::from(source),
             tokens: Vec::new(),
-            keywords: keywords.iter().cloned().collect(),
+            keywords: keywords,
             prev: 0,
             curr: 0
-        };
-
-        scanner
+        }
     }
 
     pub fn scan_tokens(mut self) -> Vec<Token> {
