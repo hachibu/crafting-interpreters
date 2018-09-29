@@ -174,8 +174,7 @@ impl<'a> Scanner<'a> {
     }
 
     fn add_token(&mut self, ty: Ty<'a>) {
-        let length = self.curr - self.prev;
-        let offset = self.curr;
+        let (length, offset) = (self.curr - self.prev, self.curr);
 
         self.tokens.push(Token { ty, length, offset });
     }

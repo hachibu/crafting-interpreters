@@ -47,3 +47,25 @@ pub enum Ty<'a> {
   While,
   Eof
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn it_impl_partial_eq() {
+        let (length, offset) = (0, 0);
+
+        assert_eq!(
+            Token { ty: Ty::Eof, length, offset },
+            Token { ty: Ty::Eof, length, offset }
+        );
+        assert_eq!(Ty::Eof, Ty::Eof);
+
+        assert_ne!(
+            Token { ty: Ty::Eof, length, offset },
+            Token { ty: Ty::Nil, length, offset }
+        );
+        assert_ne!(Ty::Eof, Ty::Nil);
+    }
+}
