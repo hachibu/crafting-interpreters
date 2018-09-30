@@ -4,3 +4,4 @@ version = "0.1.0"
 authors = ["hachibu <raymondsohn@gmail.com>"]
 
 [dependencies]
+yansi = "0.4.0"

@@ -1,4 +1,14 @@
 [[package]]
 name = "rlox"
 version = "0.1.0"
+dependencies = [
+ "yansi 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
+]
 
+[[package]]
+name = "yansi"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[metadata]
+"checksum yansi 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "d60c3b48c9cdec42fb06b3b84b5b087405e1fa1c644a1af3930e4dfafe93de48"
