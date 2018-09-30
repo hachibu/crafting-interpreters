@@ -1,11 +1,11 @@
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Token<'a> {
     pub ty: Ty<'a>,
-    pub length: usize,
-    pub offset: usize
+    pub len: usize,
+    pub pos: usize
 }
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Ty<'a> {
   LeftParen,
   RightParen,
@@ -54,17 +54,17 @@ mod tests {
 
     #[test]
     fn it_impl_partial_eq() {
-        let (length, offset) = (0, 0);
+        let (len, pos) = (0, 0);
 
         assert_eq!(
-            Token { ty: Ty::Eof, length, offset },
-            Token { ty: Ty::Eof, length, offset }
+            Token { ty: Ty::Eof, len, pos },
+            Token { ty: Ty::Eof, len, pos }
         );
         assert_eq!(Ty::Eof, Ty::Eof);
 
         assert_ne!(
-            Token { ty: Ty::Eof, length, offset },
-            Token { ty: Ty::Nil, length, offset }
+            Token { ty: Ty::Eof, len, pos },
+            Token { ty: Ty::Nil, len, pos }
         );
         assert_ne!(Ty::Eof, Ty::Nil);
     }
