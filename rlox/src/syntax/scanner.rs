@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use syntax::token::*;
-use syntax::yansi::Color;
+use yansi::Color;
 
 #[derive(Clone, Debug)]
 pub struct Scanner<'a> {
@@ -240,7 +240,7 @@ impl<'a> Scanner<'a> {
                 None => String::from("")
             },
             file_line_num = Color::Blue.paint(file_line_num),
-            error = Color::Red.paint("Error"),
+            error = Color::Red.paint("ScannerError"),
             err_msg = err_msg,
             err_line = err_line + 1,
             err_col = err_col + 1,

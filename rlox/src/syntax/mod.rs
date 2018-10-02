@@ -1,5 +1,3 @@
-extern crate yansi;
-
 pub mod scanner;
 pub mod token;
 

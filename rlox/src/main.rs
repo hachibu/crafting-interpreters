@@ -1,30 +1,45 @@
+extern crate rustyline;
+extern crate yansi;
+
 mod syntax;
 
-use std::io::{self, Write};
+use rustyline::error::ReadlineError;
+use rustyline::Editor;
 use syntax::Scanner;
+use yansi::Color;
 
-fn main() -> io::Result<()> {
+fn main() {
+    let mut editor = Editor::<()>::new();
+    let hist_file: &str = ".rlox_history";
+    let prompt: &str = ">> ";
+
+    editor.load_history(hist_file).unwrap_or(());
+
     loop {
-        io::stdout().write(b">>> ")?;
-        io::stdout().flush()?;
-
-        let mut input = String::new();
-        match io::stdin().read_line(&mut input) {
-            Ok(_) => {
-                let mut scanner = Scanner::new(&input);
-
+        match editor.readline(prompt) {
+            Ok(line) => {
+                let mut scanner = Scanner::new(&line);
                 scanner.source_file = Some("stdin");
-
                 match scanner.scan_tokens() {
                     Ok(tokens) => {
                         for token in tokens {
                             println!("{:?}", token)
                         }
                     },
-                    Err(error) => println!("{}", error)
+                    Err(err) => {
+                        println!("{}", err)
+                    }
                 }
+                editor.add_history_entry(line.as_ref());
+            },
+            Err(ReadlineError::Interrupted) => break,
+            Err(ReadlineError::Eof) => break,
+            Err(err) => {
+                println!("{}: {}", Color::Red.paint("ReadlineError"), err);
+                break
             }
-            Err(error) => println!("{}", error),
         }
     }
+
+    editor.save_history(hist_file).unwrap();
 }

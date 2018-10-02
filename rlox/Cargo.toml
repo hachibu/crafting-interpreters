@@ -4,4 +4,5 @@ version = "0.1.0"
 authors = ["hachibu <raymondsohn@gmail.com>"]
 
 [dependencies]
+rustyline = "2.1.0"
 yansi = "0.4.0"
