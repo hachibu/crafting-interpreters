@@ -1,12 +1,12 @@
 #[derive(Clone, Debug, PartialEq)]
-pub struct Token<'a> {
-    pub ty: Ty<'a>,
+pub struct Token {
+    pub ty: Ty,
     pub len: usize,
     pub pos: usize
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum Ty<'a> {
+pub enum Ty {
   LeftParen,
   RightParen,
   LeftBrace,
@@ -26,8 +26,8 @@ pub enum Ty<'a> {
   GreaterEqual,
   Less,
   LessEqual,
-  Identifier(&'a str),
-  String(&'a str),
+  Identifier(String),
+  String(String),
   Number(f64),
   And,
   Class,

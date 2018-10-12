@@ -6,8 +6,8 @@ use yansi::Color;
 pub struct Scanner<'a> {
     source: &'a str,
     pub source_file: Option<&'a str>,
-    tokens: Vec<Token<'a>>,
-    keywords: HashMap<&'a str, Ty<'a>>,
+    tokens: Vec<Token>,
+    keywords: HashMap<&'a str, Ty>,
     prev: usize,
     curr: usize,
     error: Option<String>
@@ -45,7 +45,7 @@ impl<'a> Scanner<'a> {
         }
     }
 
-    pub fn scan_tokens(&mut self) -> Result<Vec<Token<'a>>, &str> {
+    pub fn scan_tokens(&mut self) -> Result<Vec<Token>, &str> {
         while !self.at_end() {
             self.scan_token();
         }
@@ -141,7 +141,7 @@ impl<'a> Scanner<'a> {
         }
 
         let value = self.curr_lexeme().trim_matches('"');
-        let token = Ty::String(value);
+        let token = Ty::String(value.to_string());
 
         self.push_token(token);
     }
@@ -169,13 +169,13 @@ impl<'a> Scanner<'a> {
         let value = self.curr_lexeme();
         let token = match self.keywords.get(value) {
             Some(ty) => (*ty).clone(),
-            None => Ty::Identifier(value)
+            None => Ty::Identifier(value.to_string())
         };
 
         self.push_token(token);
     }
 
-    fn push_token(&mut self, ty: Ty<'a>) {
+    fn push_token(&mut self, ty: Ty) {
         let (len, pos) = match ty {
             Ty::Eof => (0, self.source.len()),
             _ => {
