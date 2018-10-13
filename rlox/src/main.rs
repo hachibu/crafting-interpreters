@@ -1,24 +1,19 @@
 extern crate rustyline;
 extern crate yansi;
 
-mod ast;
 mod cli;
+#[macro_use]
 mod syntax;
 
-use ast::{Expr};
-use syntax::{Token, Ty};
+use syntax::lex::*;
+use syntax::ast::Expr;
 
 fn main() {
-    let expr = Expr::Binary(
-        Expr::Unary(
-            Token { ty: Ty::Minus, len: 1, pos: 0 },
-            Expr::NumberLiteral(123.0).into_boxed()
-        ).into_boxed(),
-        Token { ty: Ty::Star, len: 1, pos: 2 },
-        Expr::Grouping(
-            Expr::NumberLiteral(45.67).into_boxed()
-        ).into_boxed()
-    ).into_boxed();
+    let expr = expr_binary!(
+        expr_unary!(token!(TokenTy::Minus), expr_number_literal!(123.0)),
+        token!(TokenTy::Star),
+        expr_grouping!(expr_number_literal!(45.67))
+    );
 
     println!("{:#?}", expr);
 }

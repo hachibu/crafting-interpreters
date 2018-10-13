@@ -1,6 +1,6 @@
 use rustyline::error::ReadlineError;
 use rustyline::Editor;
-use syntax::Scanner;
+use syntax::lex::Scanner;
 use yansi::Color;
 
 pub struct Shell<'a> {

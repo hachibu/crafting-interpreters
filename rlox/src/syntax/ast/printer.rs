@@ -1,13 +1,8 @@
-use ast::*;
+use syntax::ast::{Visitor, Stmt, Expr};
 
-pub trait Visitor<T> {
-    fn visit_stmt(&mut self, s: &Stmt) -> T;
-    fn visit_expr(&mut self, e: &Expr) -> T;
-}
+pub struct Printer;
 
-pub struct PrettyPrinter;
-
-impl Visitor<()> for PrettyPrinter {
+impl Visitor<()> for Printer {
     fn visit_stmt(&mut self, s: &Stmt) {
         match *s {
             Stmt::Expr(ref e) => self.visit_expr(e)

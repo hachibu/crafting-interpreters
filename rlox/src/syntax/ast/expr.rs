@@ -1,4 +1,4 @@
-use syntax::Token;
+use syntax::lex::Token;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Expr {
@@ -9,10 +9,4 @@ pub enum Expr {
     BooleanLiteral(String),
     NilLiteral,
     Unary(Token, Box<Expr>)
-}
-
-impl Expr {
-    pub fn into_boxed(self) -> Box<Expr> {
-        Box::new(self)
-    }
 }
