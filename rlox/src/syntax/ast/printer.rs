@@ -1,5 +1,6 @@
 use syntax::ast::{Visitor, Stmt, Expr};
 
+#[derive(Debug)]
 pub struct Printer;
 
 impl Visitor<()> for Printer {

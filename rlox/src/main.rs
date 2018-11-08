@@ -6,14 +6,16 @@ mod cli;
 mod syntax;
 
 use syntax::lex::*;
-use syntax::ast::Expr;
+use syntax::ast::{Expr, Stmt};
 
 fn main() {
-    let expr = expr_binary!(
-        expr_unary!(token!(TokenTy::Minus), expr_number_literal!(123.0)),
-        token!(TokenTy::Star),
-        expr_grouping!(expr_number_literal!(45.67))
+    let stmt = Stmt::Expr(
+        expr_binary!(
+            expr_unary!(token!(TokenTy::Minus), expr_number_literal!(123.0)),
+            token!(TokenTy::Star),
+            expr_grouping!(expr_number_literal!(45.67))
+        )
     );
 
-    println!("{:#?}", expr);
+    println!("{:#?}", stmt);
 }
