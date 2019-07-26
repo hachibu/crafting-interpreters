@@ -36,7 +36,7 @@ impl<'a> Shell<'a> {
                             println!("{}", err)
                         }
                     }
-                    self.editor.add_history_entry(line.as_ref());
+                    self.editor.add_history_entry(line);
                 },
                 Err(ReadlineError::Interrupted) => break,
                 Err(ReadlineError::Eof) => break,
