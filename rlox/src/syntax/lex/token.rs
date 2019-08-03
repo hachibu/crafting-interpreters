@@ -6,3 +6,13 @@ pub struct Token {
     pub len: usize,
     pub pos: usize
 }
+
+impl Token {
+    pub fn to_string(&self) -> String {
+        match &self.ty {
+            TokenTy::Minus => String::from("-"),
+            TokenTy::Star => String::from("*"),
+            ty => format!("{:?}", ty)
+        }
+    }
+}
