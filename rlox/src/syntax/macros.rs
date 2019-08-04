@@ -14,7 +14,7 @@ macro_rules! expr_binary {
 
 macro_rules! expr_number_literal {
     ($a:expr) => (Box::new(syntax::ast::LiteralExpr {
-        value: syntax::ast::Literal::NumberLiteral($a)
+        value: syntax::ast::Literal::Number($a)
     }));
 }
 

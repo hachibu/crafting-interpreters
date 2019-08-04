@@ -2,10 +2,10 @@ use syntax::lex::Token;
 use syntax::ast::Visitor;
 
 pub enum Literal {
-    NumberLiteral(f64),
-    StringLiteral(String),
-    BooleanLiteral(bool),
-    NilLiteral,
+    Number(f64),
+    String(String),
+    Boolean(bool),
+    Nil,
 }
 
 pub trait Expr {

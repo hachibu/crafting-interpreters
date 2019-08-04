@@ -29,10 +29,10 @@ impl Visitor<String> for Printer {
 
     fn visit_literal_expr(&mut self, e: &LiteralExpr) -> String{
         match &e.value {
-            Literal::NumberLiteral(v) => format!("{:}", v),
-            Literal::StringLiteral(v) => format!("{:}", v),
-            Literal::BooleanLiteral(v) => format!("{:}", v),
-            Literal::NilLiteral => String::from("nil"),
+            Literal::Number(v) => format!("{:}", v),
+            Literal::String(v) => format!("{:}", v),
+            Literal::Boolean(v) => format!("{:}", v),
+            Literal::Nil => String::from("nil"),
         }
     }
 
