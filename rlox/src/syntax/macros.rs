@@ -5,17 +5,23 @@ macro_rules! token {
 }
 
 macro_rules! expr_binary {
-    ($a:expr, $b:expr, $c:expr) => (Box::new(Expr::Binary($a, $b, $c)));
+    ($a:expr, $b:expr, $c:expr) => (syntax::ast::BinaryExpr {
+        left: $a,
+        operator: $b,
+        right: $c
+    });
 }
 
 macro_rules! expr_number_literal {
-    ($a:expr) => (Box::new(Expr::NumberLiteral($a)));
+    ($a:expr) => (Box::new(syntax::ast::LiteralExpr {
+        value: syntax::ast::Literal::NumberLiteral($a)
+    }));
 }
 
 macro_rules! expr_grouping {
-    ($a:expr) => (Box::new(Expr::Grouping($a)));
+    ($a:expr) => (Box::new(syntax::ast::GroupingExpr { expression: $a }));
 }
 
 macro_rules! expr_unary {
-    ($a:expr, $b:expr) => (Box::new(Expr::Unary($a, $b)));
+    ($a:expr, $b:expr) => (Box::new(syntax::ast::UnaryExpr { operator: $a, right: $b }));
 }

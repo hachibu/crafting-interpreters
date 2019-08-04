@@ -1,4 +1,4 @@
-use syntax::ast::{Visitor, Stmt, Expr};
+use syntax::ast::*;
 
 #[derive(Debug)]
 pub struct Printer;
@@ -8,50 +8,34 @@ impl Printer {
         Printer {}
     }
 
-    pub fn print(&mut self, e: &Expr) -> () {
-        println!("{:}",  self.visit_expr(e))
+    pub fn print(&mut self, e: &Expr) {
+        print!("{:}", e.accept(self))
     }
 }
 
 impl Visitor<String> for Printer {
-    fn visit_stmt(&mut self, s: &Stmt) -> String{
-        match s {
-            Stmt::Expr(ref e) => self.visit_expr(e)
-        }
+    fn visit_binary_expr(&mut self, e: &BinaryExpr) -> String {
+        format!(
+            "({:} {:} {:})",
+            e.operator.to_string(),
+            e.left.accept(self),
+            e.right.accept(self)
+        )
     }
 
-    fn visit_expr(&mut self, e: &Expr) -> String {
-        match e {
-            Expr::Binary(a, t, b) => {
-                format!(
-                    "({:} {:} {:})",
-                    t.to_string(),
-                    self.visit_expr(&a),
-                    self.visit_expr(&b)
-                )
-            },
-            Expr::Unary(t, a) => {
-                format!(
-                    "({:} {:})",
-                    t.to_string(),
-                    self.visit_expr(&a)
-                )
-            },
-            Expr::Grouping(a) => {
-                format!("(group {:})", self.visit_expr(&a))
-            },
-            Expr::NumberLiteral(v) => {
-                format!("{:}", v)
-            },
-            Expr::StringLiteral(v) => {
-                format!("{:}", v)
-            },
-            Expr::BooleanLiteral(v) => {
-                format!("{:}", v)
-            },
-            Expr::NilLiteral => {
-                format!("nil")
-            },
-        }
+    fn visit_grouping_expr(&mut self, e: &GroupingExpr) -> String {
+        format!("(group {:})", e.expression.accept(self))
+    }
+
+    fn visit_literal_expr(&mut self, e: &LiteralExpr) -> String{
+        format!("{:}", e.to_string())
+    }
+
+    fn visit_unary_expr(&mut self, e: &UnaryExpr) -> String{
+        format!(
+            "({:} {:})",
+            e.operator.to_string(),
+            e.right.accept(self)
+        )
     }
 }

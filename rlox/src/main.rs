@@ -8,7 +8,7 @@ mod cli;
 mod syntax;
 
 use syntax::lex::*;
-use syntax::ast::{Expr, Printer};
+use syntax::ast::{Printer};
 
 fn main() {
     let expr = expr_binary!(
