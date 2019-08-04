@@ -28,7 +28,12 @@ impl Visitor<String> for Printer {
     }
 
     fn visit_literal_expr(&mut self, e: &LiteralExpr) -> String{
-        format!("{:}", e.to_string())
+        match &e.value {
+            Literal::NumberLiteral(v) => format!("{:}", v),
+            Literal::StringLiteral(v) => format!("{:}", v),
+            Literal::BooleanLiteral(v) => format!("{:}", v),
+            Literal::NilLiteral => String::from("nil"),
+        }
     }
 
     fn visit_unary_expr(&mut self, e: &UnaryExpr) -> String{
