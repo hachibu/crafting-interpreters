@@ -4,21 +4,20 @@ extern crate rustyline;
 extern crate yansi;
 
 mod cli;
-#[macro_use]
 mod syntax;
 
 use syntax::lex::*;
-use syntax::ast::{Printer};
+use syntax::ast::*;
 
 fn main() {
-    let expr = expr_binary!(
-        expr_unary!(
-            token!(TokenTy::Minus),
-            expr_number_literal!(123.0)
+    let expr = BinaryExpr::new(
+        UnaryExpr::new(
+            Token::new(TokenTy::Minus, 1, 0),
+            LiteralExpr::new(Literal::Number(123.0))
         ),
-        token!(TokenTy::Star),
-        expr_grouping!(expr_number_literal!(45.67))
+        Token::new(TokenTy::Star, 1, 7),
+        GroupingExpr::new(LiteralExpr::new(Literal::Number(45.67)))
     );
 
-    Printer::new().print(&expr);
+    Printer::new().print(expr);
 }

@@ -23,6 +23,12 @@ macro_rules! impl_expr {
             $( pub $attr_name : $attr_type ),*
         }
 
+        impl $id {
+            pub fn new($( $attr_name: $attr_type ),*) -> Box<$id> {
+                Box::new($id { $( $attr_name ),* })
+            }
+        }
+
         impl Expr for $id {
             fn accept(&self, v: &mut Visitor<String>) -> String {
                 v.$method(self)

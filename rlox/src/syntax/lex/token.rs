@@ -8,6 +8,10 @@ pub struct Token {
 }
 
 impl Token {
+    pub fn new(ty: TokenTy, len: usize, pos: usize) -> Token {
+        Token { ty, len, pos }
+    }
+
     pub fn to_string(&self) -> String {
         match &self.ty {
             TokenTy::Minus => String::from("-"),
