@@ -7,6 +7,7 @@ mod cli;
 mod runtime;
 mod syntax;
 
+use runtime::*;
 use syntax::*;
 
 fn main() {
@@ -14,7 +15,10 @@ fn main() {
 
     match Scanner::new(source).scan_tokens() {
         Ok(tokens) => match Parser::new(tokens).parse() {
-            Ok(stmt) => Printer::new().print(&stmt),
+            Ok(stmt) => {
+                Printer::new().print(&stmt);
+                println!("{:#?}", Interpreter::new().evaluate(&stmt))
+            },
             Err(err) => println!("{}", err)
         },
         Err(err) => println!("{}", err)

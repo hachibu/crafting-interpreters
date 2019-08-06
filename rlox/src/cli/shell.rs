@@ -1,6 +1,6 @@
 use rustyline::error::ReadlineError;
 use rustyline::Editor;
-use syntax::Scanner;
+use syntax::*;
 use yansi::Color;
 
 pub struct Shell<'a> {
@@ -27,14 +27,11 @@ impl<'a> Shell<'a> {
                     let mut scanner = Scanner::new(&line);
                     scanner.source_file = Some("stdin");
                     match scanner.scan_tokens() {
-                        Ok(tokens) => {
-                            for token in tokens {
-                                println!("{:?}", token)
-                            }
+                        Ok(tokens) => match Parser::new(tokens).parse() {
+                            Ok(stmt) => Printer::new().print(&stmt),
+                            Err(err) => println!("{}", err)
                         },
-                        Err(err) => {
-                            println!("{}", err.message)
-                        }
+                        Err(err) => println!("{}", err)
                     }
                     self.editor.add_history_entry(line);
                 },
