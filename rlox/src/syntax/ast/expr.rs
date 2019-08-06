@@ -1,12 +1,5 @@
 use syntax::lex::Token;
-use syntax::ast::Visitor;
-
-pub enum Literal {
-    Number(f64),
-    String(String),
-    Boolean(bool),
-    Nil,
-}
+use syntax::ast::{Literal, Visitor};
 
 pub trait Expr {
     fn accept(&self, v: &mut Visitor<String>) -> String;
