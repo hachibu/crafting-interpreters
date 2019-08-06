@@ -1,7 +1,5 @@
 use std::mem::discriminant;
-use syntax::SyntaxError;
-use syntax::lex::{Token, TokenTy};
-use syntax::ast::*;
+use syntax::*;
 
 pub struct Parser {
     tokens: Vec<Token>,

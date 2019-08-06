@@ -1,6 +1,5 @@
 use std::collections::HashMap;
-use syntax::SyntaxError;
-use syntax::lex::*;
+use syntax::*;
 use yansi::Color;
 
 #[derive(Clone, Debug)]

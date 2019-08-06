@@ -7,8 +7,7 @@ mod cli;
 mod runtime;
 mod syntax;
 
-use syntax::lex::Scanner;
-use syntax::ast::{Parser, Printer};
+use syntax::*;
 
 fn main() {
     let source = "1 + 2 * 3";

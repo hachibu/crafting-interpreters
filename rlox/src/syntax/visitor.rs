@@ -1,4 +1,4 @@
-use syntax::ast::*;
+use syntax::*;
 
 pub trait Visitor<T> {
     fn visit_stmt(&mut self, e: &Stmt) -> T;

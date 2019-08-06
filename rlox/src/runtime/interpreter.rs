@@ -1,4 +1,4 @@
-use syntax::ast::*;
+use syntax::*;
 
 #[derive(Debug)]
 pub enum Object {

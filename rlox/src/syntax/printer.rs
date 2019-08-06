@@ -1,4 +1,4 @@
-use syntax::ast::*;
+use syntax::*;
 
 pub struct Printer;
 

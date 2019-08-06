@@ -1,5 +1,4 @@
-use syntax::lex::Token;
-use syntax::ast::Literal;
+use syntax::*;
 
 pub enum Expr {
     Binary(Box<Expr>, Token, Box<Expr>),

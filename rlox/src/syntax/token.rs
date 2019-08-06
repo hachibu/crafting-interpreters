@@ -1,4 +1,4 @@
-use syntax::lex::TokenTy;
+use syntax::TokenTy;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Token {
