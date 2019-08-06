@@ -4,6 +4,7 @@ extern crate rustyline;
 extern crate yansi;
 
 mod cli;
+mod runtime;
 mod syntax;
 
 use syntax::lex::Scanner;
