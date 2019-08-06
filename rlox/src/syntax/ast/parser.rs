@@ -16,8 +16,8 @@ impl Parser {
         }
     }
 
-    pub fn parse(&mut self) -> Result<Box<Expr>, SyntaxError> {
-        Ok(self.expression())
+    pub fn parse(&mut self) -> Result<Box<Stmt>, SyntaxError> {
+        Ok(Box::new(Stmt::Expr(self.expression())))
     }
 
     fn expression(&mut self) -> Box<Expr> {

@@ -7,12 +7,18 @@ impl Printer {
         Printer {}
     }
 
-    pub fn print(&mut self, e: &Expr) {
-        println!("{}", self.visit_expr(e));
+    pub fn print(&mut self, s: &Stmt) {
+        println!("{}", self.visit_stmt(s));
     }
 }
 
 impl Visitor<String> for Printer {
+    fn visit_stmt(&mut self, s: &Stmt) -> String {
+        match s {
+            Stmt::Expr(expression) => self.visit_expr(expression)
+        }
+    }
+
     fn visit_expr(&mut self, e: &Expr) -> String {
         match e {
             Expr::Binary(left, operator, right) => format!(
