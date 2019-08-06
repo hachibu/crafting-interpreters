@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use syntax::SyntaxError;
 use syntax::lex::*;
 use yansi::Color;
 
@@ -45,13 +46,13 @@ impl<'a> Scanner<'a> {
         }
     }
 
-    pub fn scan_tokens(&mut self) -> Result<Vec<Token>, &str> {
+    pub fn scan_tokens(&mut self) -> Result<Vec<Token>, SyntaxError> {
         while !self.at_end() {
             self.scan_token();
         }
 
         match self.error {
-            Some(ref error) => Err(&error),
+            Some(ref error) => Err(SyntaxError::new(error.to_string())),
             None => {
                 self.push_token(TokenTy::Eof);
                 Ok(self.tokens.clone())
@@ -240,7 +241,7 @@ impl<'a> Scanner<'a> {
                 None => String::from("")
             },
             file_line_num = Color::Blue.paint(file_line_num),
-            error = Color::Red.paint("ScannerError"),
+            error = Color::Red.paint("SyntaxError"),
             err_msg = err_msg,
             err_line = err_line + 1,
             err_col = err_col + 1,

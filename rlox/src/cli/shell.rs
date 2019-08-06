@@ -33,7 +33,7 @@ impl<'a> Shell<'a> {
                             }
                         },
                         Err(err) => {
-                            println!("{}", err)
+                            println!("{}", err.message)
                         }
                     }
                     self.editor.add_history_entry(line);

@@ -1,4 +1,5 @@
-use std::mem::{discriminant};
+use std::mem::discriminant;
+use syntax::SyntaxError;
 use syntax::lex::{Token, TokenTy};
 use syntax::ast::*;
 
@@ -15,7 +16,7 @@ impl Parser {
         }
     }
 
-    pub fn parse(&mut self) -> Result<Box<Expr>, &str> {
+    pub fn parse(&mut self) -> Result<Box<Expr>, SyntaxError> {
         Ok(self.expression())
     }
 

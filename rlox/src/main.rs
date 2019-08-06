@@ -6,7 +6,7 @@ extern crate yansi;
 mod cli;
 mod syntax;
 
-use syntax::lex::{Scanner};
+use syntax::lex::Scanner;
 use syntax::ast::{Parser, Printer};
 
 fn main() {
@@ -15,8 +15,8 @@ fn main() {
     match Scanner::new(source).scan_tokens() {
         Ok(tokens) => match Parser::new(tokens).parse() {
             Ok(expr) => Printer::new().print(expr),
-            Err(message) => println!("{:}", message)
+            Err(err) => println!("{}", err)
         },
-        Err(message) => println!("{:}", message)
+        Err(err) => println!("{}", err)
     }
 }
