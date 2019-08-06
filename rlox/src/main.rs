@@ -12,10 +12,10 @@ use syntax::ast::*;
 fn main() {
     let expr = BinaryExpr::new(
         UnaryExpr::new(
-            Token::new(TokenTy::Minus, 1, 0),
+            Token::new(TokenTy::Minus, None, None),
             LiteralExpr::new(Literal::Number(123.0))
         ),
-        Token::new(TokenTy::Star, 1, 7),
+        Token::new(TokenTy::Star, None, None),
         GroupingExpr::new(LiteralExpr::new(Literal::Number(45.67)))
     );
 
