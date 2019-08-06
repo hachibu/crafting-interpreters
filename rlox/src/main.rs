@@ -6,18 +6,17 @@ extern crate yansi;
 mod cli;
 mod syntax;
 
-use syntax::lex::*;
-use syntax::ast::*;
+use syntax::lex::{Scanner};
+use syntax::ast::{Parser, Printer};
 
 fn main() {
-    let expr = BinaryExpr::new(
-        UnaryExpr::new(
-            Token::new(TokenTy::Minus, None, None),
-            LiteralExpr::new(Literal::Number(123.0))
-        ),
-        Token::new(TokenTy::Star, None, None),
-        GroupingExpr::new(LiteralExpr::new(Literal::Number(45.67)))
-    );
+    let source = "1 + 2 * 3";
 
-    Printer::new().print(expr);
+    match Scanner::new(source).scan_tokens() {
+        Ok(tokens) => match Parser::new(tokens).parse() {
+            Ok(expr) => Printer::new().print(expr),
+            Err(message) => println!("{:}", message)
+        },
+        Err(message) => println!("{:}", message)
+    }
 }

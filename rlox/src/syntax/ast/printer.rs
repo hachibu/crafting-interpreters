@@ -9,7 +9,7 @@ impl Printer {
     }
 
     pub fn print(&mut self, e: Box<Expr>) {
-        print!("{:}", e.accept(self))
+        println!("{:}", e.accept(self))
     }
 }
 

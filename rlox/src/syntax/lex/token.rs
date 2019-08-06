@@ -25,6 +25,7 @@ impl Token {
     pub fn to_string(&self) -> String {
         match &self.ty {
             TokenTy::Minus => String::from("-"),
+            TokenTy::Plus  => String::from("+"),
             TokenTy::Star  => String::from("*"),
             ty             => format!("{:?}", ty)
         }

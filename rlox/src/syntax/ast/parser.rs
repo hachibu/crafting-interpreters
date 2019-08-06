@@ -15,6 +15,10 @@ impl Parser {
         }
     }
 
+    pub fn parse(&mut self) -> Result<Box<Expr>, &str> {
+        Ok(self.expression())
+    }
+
     fn expression(&mut self) -> Box<Expr> {
         self.equality()
     }

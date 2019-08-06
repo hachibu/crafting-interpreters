@@ -40,4 +40,3 @@ pub enum TokenTy {
   While,
   Eof
 }
-
