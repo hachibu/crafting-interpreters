@@ -34,7 +34,7 @@ impl Parser {
             let operator = self.previous();
             let right = self.comparison();
 
-            expr = BinaryExpr::new(expr, operator, right);
+            expr = Box::new(Expr::Binary(expr, operator, right));
         }
 
         expr
@@ -52,7 +52,7 @@ impl Parser {
             let operator = self.previous();
             let right = self.addition();
 
-            expr = BinaryExpr::new(expr, operator, right);
+            expr = Box::new(Expr::Binary(expr, operator, right));
         }
 
         expr
@@ -68,7 +68,7 @@ impl Parser {
             let operator = self.previous();
             let right = self.multiplication();
 
-            expr = BinaryExpr::new(expr, operator, right);
+            expr = Box::new(Expr::Binary(expr, operator, right));
         }
 
         expr
@@ -84,7 +84,7 @@ impl Parser {
             let operator = self.previous();
             let right = self.unary();
 
-            expr = BinaryExpr::new(expr, operator, right);
+            expr = Box::new(Expr::Binary(expr, operator, right));
         }
 
         expr
@@ -98,7 +98,7 @@ impl Parser {
             let operator = self.previous();
             let right = self.unary();
 
-            UnaryExpr::new(operator, right)
+            Box::new(Expr::Unary(operator, right))
         } else {
             self.primary()
         }
@@ -106,13 +106,13 @@ impl Parser {
 
     fn primary(&mut self) -> Box<Expr> {
         if self.match_ty(&[TokenTy::False]) {
-            LiteralExpr::new(Literal::Boolean(false))
+            Box::new(Expr::Literal(Literal::Boolean(false)))
         }
         else if self.match_ty(&[TokenTy::True]) {
-            LiteralExpr::new(Literal::Boolean(true))
+            Box::new(Expr::Literal(Literal::Boolean(true)))
         }
         else if self.match_ty(&[TokenTy::Nil]) {
-            LiteralExpr::new(Literal::Nil)
+            Box::new(Expr::Literal(Literal::Nil))
         }
         else if self.match_ty(&[
             TokenTy::Number(0.0),
@@ -120,8 +120,8 @@ impl Parser {
         ]) {
             let previous = self.previous();
             match previous.ty {
-                TokenTy::Number(v) => LiteralExpr::new(Literal::Number(v)),
-                TokenTy::String(v) => LiteralExpr::new(Literal::String(v)),
+                TokenTy::Number(v) => Box::new(Expr::Literal(Literal::Number(v))),
+                TokenTy::String(v) => Box::new(Expr::Literal(Literal::String(v))),
                 _ => panic!()
             }
         }
@@ -131,7 +131,7 @@ impl Parser {
                 TokenTy::RightParen,
                 String::from("Expect ')' after expression.")
             );
-            GroupingExpr::new(expr)
+            Box::new(Expr::Grouping(expr))
         } else {
             panic!()
         }
