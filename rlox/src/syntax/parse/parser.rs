@@ -22,7 +22,7 @@ impl Parser {
     fn equality(&mut self) -> Box<Expr> {
         let mut expr = self.comparison();
 
-        while self.match_types(&[
+        while self.match_ty(&[
             TokenTy::BangEqual,
             TokenTy::EqualEqual
         ]) {
@@ -38,7 +38,7 @@ impl Parser {
     fn comparison(&mut self) -> Box<Expr> {
         let mut expr = self.addition();
 
-        while self.match_types(&[
+        while self.match_ty(&[
             TokenTy::Greater,
             TokenTy::GreaterEqual,
             TokenTy::Less,
@@ -56,7 +56,7 @@ impl Parser {
     fn addition(&mut self) -> Box<Expr> {
         let mut expr = self.multiplication();
 
-        while self.match_types(&[
+        while self.match_ty(&[
             TokenTy::Minus,
             TokenTy::Plus
         ]) {
@@ -72,7 +72,7 @@ impl Parser {
     fn multiplication(&mut self) -> Box<Expr> {
         let mut expr = self.unary();
 
-        while self.match_types(&[
+        while self.match_ty(&[
             TokenTy::Slash,
             TokenTy::Star
         ]) {
@@ -86,7 +86,7 @@ impl Parser {
     }
 
     fn unary(&mut self) -> Box<Expr> {
-        if self.match_types(&[
+        if self.match_ty(&[
             TokenTy::Bang,
             TokenTy::Minus
         ]) {
@@ -100,16 +100,16 @@ impl Parser {
     }
 
     fn primary(&mut self) -> Box<Expr> {
-        if self.match_types(&[TokenTy::False]) {
+        if self.match_ty(&[TokenTy::False]) {
             LiteralExpr::new(Literal::Boolean(false))
         }
-        else if self.match_types(&[TokenTy::True]) {
+        else if self.match_ty(&[TokenTy::True]) {
             LiteralExpr::new(Literal::Boolean(true))
         }
-        else if self.match_types(&[TokenTy::Nil]) {
+        else if self.match_ty(&[TokenTy::Nil]) {
             LiteralExpr::new(Literal::Nil)
         }
-        else if self.match_types(&[
+        else if self.match_ty(&[
             TokenTy::Number(0.0),
             TokenTy::String(String::from(""))
         ]) {
@@ -120,7 +120,7 @@ impl Parser {
                 _ => panic!()
             }
         }
-        else if self.match_types(&[TokenTy::LeftParen]) {
+        else if self.match_ty(&[TokenTy::LeftParen]) {
             let expr = self.expression();
             self.consume(
                 TokenTy::RightParen,
@@ -136,9 +136,9 @@ impl Parser {
         unimplemented!()
     }
 
-    fn match_types(&mut self, types: &[TokenTy]) -> bool {
+    fn match_ty(&mut self, types: &[TokenTy]) -> bool {
         for ty in types {
-            if self.check(ty.clone()) {
+            if self.check(ty) {
                 self.advance();
                 return true;
             }
@@ -146,7 +146,7 @@ impl Parser {
         return false
     }
 
-    fn check(&mut self, token_ty: TokenTy) -> bool {
+    fn check(&mut self, token_ty: &TokenTy) -> bool {
         if self.is_at_end() {
             false
         } else {
