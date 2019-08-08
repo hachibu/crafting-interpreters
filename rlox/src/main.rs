@@ -7,20 +7,8 @@ mod cli;
 mod runtime;
 mod syntax;
 
-use runtime::*;
-use syntax::*;
+use cli::*;
 
 fn main() {
-    let source = "1 + 2 * 3";
-
-    match Scanner::new(source).scan_tokens() {
-        Ok(tokens) => match Parser::new(tokens).parse() {
-            Ok(stmt) => {
-                AstPrinter::new().print(&stmt);
-                println!("{:#?}", Interpreter::new().evaluate(&stmt))
-            },
-            Err(err) => println!("{}", err)
-        },
-        Err(err) => println!("{}", err)
-    }
+    Shell::new().evaluate("1 + 2 * 3");
 }

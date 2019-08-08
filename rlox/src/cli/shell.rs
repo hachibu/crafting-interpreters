@@ -1,3 +1,4 @@
+use runtime::*;
 use rustyline::error::ReadlineError;
 use rustyline::Editor;
 use syntax::*;
@@ -18,21 +19,12 @@ impl<'a> Shell<'a> {
         }
     }
 
-    pub fn run(&mut self) {
+    pub fn interactive(&mut self) {
         self.editor.load_history(self.history_file).unwrap_or(());
-
         loop {
             match self.editor.readline(self.prompt) {
                 Ok(line) => {
-                    let mut scanner = Scanner::new(&line);
-                    scanner.source_file = Some("stdin");
-                    match scanner.scan_tokens() {
-                        Ok(tokens) => match Parser::new(tokens).parse() {
-                            Ok(stmt) => AstPrinter::new().print(&stmt),
-                            Err(err) => println!("{}", err)
-                        },
-                        Err(err) => println!("{}", err)
-                    }
+                    self.evaluate(&line);
                     self.editor.add_history_entry(line);
                 },
                 Err(ReadlineError::Interrupted) => break,
@@ -43,7 +35,19 @@ impl<'a> Shell<'a> {
                 }
             }
         }
-
         self.editor.save_history(self.history_file).unwrap();
+    }
+
+    pub fn evaluate(&mut self, line: &str) {
+        match Scanner::new(line).scan_tokens() {
+            Ok(tokens) => match Parser::new(tokens).parse() {
+                Ok(stmt) => {
+                    AstPrinter::new().print(&stmt);
+                    println!("{:#?}", Interpreter::new().evaluate(&stmt));
+                },
+                Err(err) => println!("{}", err)
+            },
+            Err(err) => println!("{}", err)
+        }
     }
 }
