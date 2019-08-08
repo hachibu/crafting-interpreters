@@ -4,15 +4,15 @@ use rustyline::Editor;
 use syntax::*;
 use yansi::Color;
 
-pub struct Shell<'a> {
+pub struct Lox<'a> {
     editor: Editor<()>,
     prompt: &'a str,
     history_file: &'a str
 }
 
-impl<'a> Shell<'a> {
-    pub fn new() -> Shell<'a> {
-        Shell {
+impl<'a> Lox<'a> {
+    pub fn new() -> Lox<'a> {
+        Lox {
             editor: Editor::<()>::new(),
             prompt: ">> ",
             history_file: ".rlox_history"
@@ -24,7 +24,7 @@ impl<'a> Shell<'a> {
         loop {
             match self.editor.readline(self.prompt) {
                 Ok(line) => {
-                    self.evaluate(&line);
+                    self.interpret(&line);
                     self.editor.add_history_entry(line);
                 },
                 Err(ReadlineError::Interrupted) => break,
@@ -38,12 +38,12 @@ impl<'a> Shell<'a> {
         self.editor.save_history(self.history_file).unwrap();
     }
 
-    pub fn evaluate(&mut self, line: &str) {
+    pub fn interpret(&mut self, line: &str) {
         match Scanner::new(line).scan_tokens() {
             Ok(tokens) => match Parser::new(tokens).parse() {
                 Ok(stmt) => {
                     AstPrinter::new().print(&stmt);
-                    println!("{:#?}", Interpreter::new().evaluate(&stmt));
+                    println!("{:#?}", Interpreter::new().interpret(&stmt));
                 },
                 Err(err) => println!("{}", err)
             },

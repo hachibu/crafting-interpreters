@@ -3,12 +3,12 @@
 extern crate rustyline;
 extern crate yansi;
 
-mod cli;
+mod lox;
 mod runtime;
 mod syntax;
 
-use cli::*;
+use lox::Lox;
 
 fn main() {
-    Shell::new().evaluate("1 + 2 * 3");
+    Lox::new().interpret("1 + 2 * 3");
 }

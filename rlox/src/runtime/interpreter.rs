@@ -8,7 +8,7 @@ impl Interpreter {
         Interpreter {}
     }
 
-    pub fn evaluate(&mut self, s: &Stmt) -> LoxObject {
+    pub fn interpret(&mut self, s: &Stmt) -> LoxObject {
         self.visit_stmt(s)
     }
 
