@@ -1,7 +1,7 @@
+pub mod ast_printer;
 pub mod expr;
 pub mod literal;
 pub mod parser;
-pub mod printer;
 pub mod scanner;
 pub mod stmt;
 pub mod syntax_error;
@@ -9,10 +9,10 @@ pub mod token;
 pub mod token_ty;
 pub mod visitor;
 
+pub use self::ast_printer::*;
 pub use self::expr::*;
 pub use self::literal::*;
 pub use self::parser::*;
-pub use self::printer::*;
 pub use self::scanner::*;
 pub use self::stmt::*;
 pub use self::syntax_error::*;

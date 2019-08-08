@@ -1,10 +1,10 @@
 use syntax::*;
 
-pub struct Printer;
+pub struct AstPrinter;
 
-impl Printer {
-    pub fn new() -> Printer {
-        Printer {}
+impl AstPrinter {
+    pub fn new() -> AstPrinter {
+        AstPrinter {}
     }
 
     pub fn print(&mut self, s: &Stmt) {
@@ -12,7 +12,7 @@ impl Printer {
     }
 }
 
-impl Visitor<String> for Printer {
+impl Visitor<String> for AstPrinter {
     fn visit_stmt(&mut self, s: &Stmt) -> String {
         match s {
             Stmt::Expr(expression) => self.visit_expr(expression)

@@ -16,7 +16,7 @@ fn main() {
     match Scanner::new(source).scan_tokens() {
         Ok(tokens) => match Parser::new(tokens).parse() {
             Ok(stmt) => {
-                Printer::new().print(&stmt);
+                AstPrinter::new().print(&stmt);
                 println!("{:#?}", Interpreter::new().evaluate(&stmt))
             },
             Err(err) => println!("{}", err)

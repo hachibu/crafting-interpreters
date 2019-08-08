@@ -28,7 +28,7 @@ impl<'a> Shell<'a> {
                     scanner.source_file = Some("stdin");
                     match scanner.scan_tokens() {
                         Ok(tokens) => match Parser::new(tokens).parse() {
-                            Ok(stmt) => Printer::new().print(&stmt),
+                            Ok(stmt) => AstPrinter::new().print(&stmt),
                             Err(err) => println!("{}", err)
                         },
                         Err(err) => println!("{}", err)
