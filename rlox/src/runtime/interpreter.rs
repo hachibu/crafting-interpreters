@@ -66,37 +66,70 @@ impl Visitor<LoxObject> for Interpreter {
                     _ => object
                 }
             },
-            Expr::Binary(_left, _operator, _right) => {
-                //Object left = evaluate(expr.left);
-                //Object right = evaluate(expr.right);
-                //
-                //switch (expr.operator.type) {
-                //    case MINUS:
-                //        return (double)left - (double)right;
-                //    case SLASH:
-                //        return (double)left / (double)right;
-                //    case STAR:
-                //        return (double)left * (double)right;
-                //    case PLUS:
-                //        if (left instanceof Double && right instanceof Double) {
-                //            return (double)left + (double)right;
-                //        }
-                //        if (left instanceof String && right instanceof String) {
-                //            return (String)left + (String)right;
-                //        }
-                //    case GREATER:
-                //        return (double)left > (double)right;
-                //    case GREATER_EQUAL:
-                //        return (double)left >= (double)right;
-                //    case LESS:
-                //        return (double)left < (double)right;
-                //    case LESS_EQUAL:
-                //        return (double)left <= (double)right;
-                //    case BANG_EQUAL: return !isEqual(left, right);
-                //    case EQUAL_EQUAL: return isEqual(left, right);
-                //}
-                //
-                LoxObject::Nil
+            Expr::Binary(left, operator, right) => {
+                let lhs = self.visit_expr(left);
+                let rhs = self.visit_expr(right);
+
+                match operator.ty {
+                    TokenTy::Minus => match (lhs, rhs) {
+                        (LoxObject::Number(a), LoxObject::Number(b)) => {
+                            LoxObject::Number(a + b)
+                        },
+                        (_, _) => LoxObject::Nil
+                    },
+                    TokenTy::Slash => match (lhs, rhs) {
+                        (LoxObject::Number(a), LoxObject::Number(b)) => {
+                            LoxObject::Number(a / b)
+                        },
+                        (_, _) => LoxObject::Nil
+                    },
+                    TokenTy::Star => match (lhs, rhs) {
+                        (LoxObject::Number(a), LoxObject::Number(b)) => {
+                            LoxObject::Number(a * b)
+                        },
+                        (_, _) => LoxObject::Nil
+                    },
+                    TokenTy::Plus => match (lhs, rhs) {
+                        (LoxObject::Number(a), LoxObject::Number(b)) => {
+                            LoxObject::Number(a + b)
+                        },
+                        (LoxObject::String(a), LoxObject::String(b)) => {
+                            LoxObject::String([a, b].join(""))
+                        },
+                        (_, _) => LoxObject::Nil
+                    },
+                    TokenTy::Greater => match (lhs, rhs) {
+                        (LoxObject::Boolean(a), LoxObject::Boolean(b)) => {
+                            LoxObject::Boolean(a > b)
+                        },
+                        (_, _) => LoxObject::Nil
+                    },
+                    TokenTy::GreaterEqual => match (lhs, rhs) {
+                        (LoxObject::Boolean(a), LoxObject::Boolean(b)) => {
+                            LoxObject::Boolean(a >= b)
+                        },
+                        (_, _) => LoxObject::Nil
+                    },
+                    TokenTy::Less => match (lhs, rhs) {
+                        (LoxObject::Boolean(a), LoxObject::Boolean(b)) => {
+                            LoxObject::Boolean(a < b)
+                        },
+                        (_, _) => LoxObject::Nil
+                    },
+                    TokenTy::LessEqual => match (lhs, rhs) {
+                        (LoxObject::Boolean(a), LoxObject::Boolean(b)) => {
+                            LoxObject::Boolean(a <= b)
+                        },
+                        (_, _) => LoxObject::Nil
+                    },
+                    TokenTy::BangEqual => {
+                        LoxObject::Boolean(!self.is_equal(&lhs, &rhs))
+                    },
+                    TokenTy::EqualEqual => {
+                        LoxObject::Boolean(self.is_equal(&lhs, &rhs))
+                    },
+                    _ => LoxObject::Nil
+                }
             }
         }
     }
