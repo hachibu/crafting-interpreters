@@ -15,7 +15,8 @@ impl AstPrinter {
 impl Visitor<String> for AstPrinter {
     fn visit_stmt(&mut self, s: &Stmt) -> String {
         match s {
-            Stmt::Expr(expression) => self.visit_expr(expression)
+            Stmt::Expr(expression) => self.visit_expr(expression),
+            Stmt::Print(expression) => self.visit_expr(expression)
         }
     }
 

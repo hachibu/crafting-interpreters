@@ -1,37 +1,35 @@
 use std::collections::HashMap;
 use syntax::*;
-use yansi::Color;
 
-#[derive(Clone, Debug)]
-pub struct Scanner<'a> {
-    source: &'a str,
-    pub source_file: Option<&'a str>,
+pub struct Scanner {
     tokens: Vec<Token>,
-    keywords: HashMap<&'a str, TokenTy>,
-    prev: usize,
+    keywords: HashMap<String, TokenTy>,
+    source: String,
+    pub source_file: Option<String>,
     curr: usize,
+    prev: usize,
     error: Option<String>
 }
 
-impl<'a> Scanner<'a> {
-    pub fn new(source: &'a str) -> Scanner<'a> {
+impl Scanner {
+    pub fn new(source: String) -> Scanner {
         let keywords = [
-            ("and", TokenTy::And),
-            ("class", TokenTy::Class),
-            ("else", TokenTy::Else),
-            ("false", TokenTy::False),
-            ("for", TokenTy::For),
-            ("fun", TokenTy::Fun),
-            ("if", TokenTy::If),
-            ("nil", TokenTy::Nil),
-            ("or", TokenTy::Or),
-            ("print", TokenTy::Print),
-            ("return", TokenTy::Return),
-            ("super", TokenTy::Super),
-            ("this", TokenTy::This),
-            ("true", TokenTy::True),
-            ("var", TokenTy::Var),
-            ("while", TokenTy::While)
+            (String::from("and"), TokenTy::And),
+            (String::from("class"), TokenTy::Class),
+            (String::from("else"), TokenTy::Else),
+            (String::from("false"), TokenTy::False),
+            (String::from("for"), TokenTy::For),
+            (String::from("fun"), TokenTy::Fun),
+            (String::from("if"), TokenTy::If),
+            (String::from("nil"), TokenTy::Nil),
+            (String::from("or"), TokenTy::Or),
+            (String::from("print"), TokenTy::Print),
+            (String::from("return"), TokenTy::Return),
+            (String::from("super"), TokenTy::Super),
+            (String::from("this"), TokenTy::This),
+            (String::from("true"), TokenTy::True),
+            (String::from("var"), TokenTy::Var),
+            (String::from("while"), TokenTy::While)
         ].iter().cloned().collect();
 
         Scanner {
@@ -39,8 +37,8 @@ impl<'a> Scanner<'a> {
             source_file: None,
             keywords,
             tokens: Vec::new(),
-            prev: 0,
             curr: 0,
+            prev: 0,
             error: None
         }
     }
@@ -51,7 +49,14 @@ impl<'a> Scanner<'a> {
         }
 
         match self.error {
-            Some(ref error) => Err(SyntaxError::new(error.to_string())),
+            Some(ref message) => Err(
+                SyntaxError::new(
+                    &message,
+                    &self.source,
+                    &self.source_file,
+                    self.prev
+                )
+            ),
             None => {
                 self.push_token(TokenTy::Eof);
                 Ok(self.tokens.clone())
@@ -192,66 +197,8 @@ impl<'a> Scanner<'a> {
         self.error.is_some() || self.curr >= self.source.len()
     }
 
-    fn stop(&mut self, err_msg: &'a str) {
-        let err_lines: Vec<&str> =
-            self.source.get(0..self.prev).unwrap_or("")
-                       .lines()
-                       .collect();
-
-        let (err_line, err_col) =
-            if err_lines.len() == 0 {
-                (0, 0)
-            } else {
-                let err_line = err_lines.len() - 1;
-                let err_col = err_lines.get(err_line).unwrap().len();
-                (err_line, err_col)
-            };
-
-        let lines: Vec<&str> = self.source.split('\n').collect();
-        let curr_line: &str = lines.get(err_line).unwrap();
-        let prev_line: &str =
-            if err_line == 0 {
-                ""
-            } else {
-                lines.get(err_line - 1).unwrap()
-            };
-
-        let curr_line_num: String = format!("{} | ", err_line + 1);
-        let curr_line_ptr: String = format!(
-            "{}^",
-            "-".repeat(curr_line_num.len() + err_col)
-        );
-        let prev_line_num: String = format!(
-            "{}| ",
-            " ".repeat(curr_line_num.len() - 2)
-        );
-        let file_line_num: String = format!(
-            "{}> ",
-            "-".repeat(curr_line_num.len() - 2)
-        );
-
-        let pretty_err_msg: String = format!("{error}: {err_msg}
-{file_line_num}{file}{err_line}:{err_col}
-{prev_line_num}{prev_line}
-{curr_line_num}{curr_line}
-{curr_line_ptr}",
-            file = match self.source_file {
-                Some(s) => format!("{}:", s),
-                None => String::from("")
-            },
-            file_line_num = Color::Blue.paint(file_line_num),
-            error = Color::Red.paint("SyntaxError"),
-            err_msg = err_msg,
-            err_line = err_line + 1,
-            err_col = err_col + 1,
-            prev_line_num = Color::Blue.paint(prev_line_num),
-            prev_line = prev_line,
-            curr_line_num = Color::Blue.paint(curr_line_num),
-            curr_line = curr_line,
-            curr_line_ptr = Color::Red.paint(curr_line_ptr)
-        );
-
-        self.error = Some(pretty_err_msg.to_string());
+    fn stop(&mut self, message: &str) {
+        self.error = Some(message.to_string());
     }
 
     fn next(&mut self) -> char {
@@ -288,7 +235,7 @@ impl<'a> Scanner<'a> {
         self.source.chars().nth(n).unwrap_or('\0')
     }
 
-    fn curr_lexeme(&self) -> &'a str {
+    fn curr_lexeme(&self) -> &str {
         self.source.get(self.prev..self.curr).unwrap_or("")
     }
 

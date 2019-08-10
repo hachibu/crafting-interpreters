@@ -37,6 +37,9 @@ impl Visitor<LoxObject> for Interpreter {
         match s {
             Stmt::Expr(expression) => {
                 self.visit_expr(expression)
+            },
+            Stmt::Print(expression) => {
+                self.visit_expr(expression)
             }
         }
     }
