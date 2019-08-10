@@ -7,7 +7,8 @@ use yansi::Color;
 pub struct Lox<'a> {
     editor: Editor<()>,
     prompt: &'a str,
-    history_file: &'a str
+    history_file: &'a str,
+    interpreter: Interpreter
 }
 
 impl<'a> Lox<'a> {
@@ -15,7 +16,8 @@ impl<'a> Lox<'a> {
         Lox {
             editor: Editor::<()>::new(),
             prompt: ">> ",
-            history_file: ".rlox_history"
+            history_file: ".rlox_history",
+            interpreter: Interpreter::new()
         }
     }
 
@@ -38,10 +40,10 @@ impl<'a> Lox<'a> {
         self.editor.save_history(self.history_file).unwrap();
     }
 
-    pub fn interpret(&mut self, line: &str) {
-        match Scanner::new(line).scan_tokens() {
-            Ok(tokens) => match Parser::new(tokens, line).parse() {
-                Ok(stmts) => match Interpreter::new().interpret(stmts) {
+    pub fn interpret(&mut self, source: &str) {
+        match Scanner::new(source).scan_tokens() {
+            Ok(tokens) => match Parser::new(tokens, source).parse() {
+                Ok(stmts) => match self.interpreter.interpret(stmts) {
                     Ok(_) => {},
                     Err(err) => println!("{}", err)
                 },

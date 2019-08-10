@@ -11,7 +11,8 @@ use lox::Lox;
 
 fn main() {
     Lox::new().interpret("
-        printAst 1 + 2;
-        print 1 + 2;
+        var a = 1;
+        var b = 2;
+        print a + b;
     ");
 }

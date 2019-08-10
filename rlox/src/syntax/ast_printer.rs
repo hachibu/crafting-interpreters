@@ -24,10 +24,17 @@ impl Visitor<String> for AstPrinter {
                 "(print {})",
                 self.visit_expr(expression)
             ),
-            Stmt::PrintAst(expression) => format!(
-                "(printAst {})",
-                self.visit_expr(expression)
-            )
+            Stmt::Var(name, initializer) => match initializer {
+                Some(expr) => format!(
+                    "(var {} {})",
+                    name,
+                    self.visit_expr(expr)
+                ),
+                None => format!(
+                    "(var {})",
+                    name
+                )
+            }
         }
     }
 
@@ -53,6 +60,10 @@ impl Visitor<String> for AstPrinter {
                 "({} {})",
                 operator.to_string(),
                 self.visit_expr(right)
+            ),
+            Expr::Variable(name) => format!(
+                "{}",
+                 name
             )
         }
     }

@@ -1,7 +1,7 @@
-use syntax::Expr;
+use syntax::*;
 
 pub enum Stmt {
     Expr(Box<Expr>),
     Print(Box<Expr>),
-    PrintAst(Box<Expr>),
+    Var(String, Option<Box<Expr>>)
 }

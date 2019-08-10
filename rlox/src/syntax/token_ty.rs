@@ -1,4 +1,4 @@
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum TokenTy {
   LeftParen,
   RightParen,
@@ -32,7 +32,6 @@ pub enum TokenTy {
   Nil,
   Or,
   Print,
-  PrintAst,
   Return,
   Super,
   This,

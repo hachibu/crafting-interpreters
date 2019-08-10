@@ -26,7 +26,7 @@ impl Parser {
         let mut statements = Vec::new();
 
         while !self.is_at_end() {
-            statements.push(self.statement());
+            statements.push(self.declaration());
         }
 
         match self.error {
@@ -42,23 +42,43 @@ impl Parser {
         }
     }
 
-    fn statement(&mut self) -> Box<Stmt> {
-        if self.match_1(TokenTy::Print) {
-            self.print_statement()
-        } else if self.match_1(TokenTy::PrintAst) {
-            self.print_ast_statement()
+    fn declaration(&mut self) -> Box<Stmt> {
+        if self.match_1(TokenTy::Var) {
+            self.var_declaration()
         } else {
-            self.expression_statement()
+            self.statement()
         }
     }
 
-    fn print_ast_statement(&mut self) -> Box<Stmt> {
-        let expr = self.expression();
+    fn var_declaration(&mut self) -> Box<Stmt> {
+        let token = self.consume(
+            TokenTy::Identifier("".to_string()),
+            "Expected variable name."
+        );
+        let value = match token.ty {
+            TokenTy::Identifier(v) => v,
+            _ => panic!()
+        };
+
+        let mut initializer = None;
+
+        if self.match_1(TokenTy::Equal) {
+            initializer = Some(self.expression());
+        }
         self.consume(
             TokenTy::Semicolon,
-            "Expected `;` after expression."
+            "Expected `;` after variable declaration."
         );
-        Box::new(Stmt::PrintAst(expr))
+
+        Box::new(Stmt::Var(value, initializer))
+    }
+
+    fn statement(&mut self) -> Box<Stmt> {
+        if self.match_1(TokenTy::Print) {
+            self.print_statement()
+        } else {
+            self.expression_statement()
+        }
     }
 
     fn print_statement(&mut self) -> Box<Stmt> {
@@ -163,7 +183,7 @@ impl Parser {
         }
         else if self.match_2(
             TokenTy::Number(0.0),
-            TokenTy::String(String::from(""))
+            TokenTy::String("".to_string())
         ) {
             match self.previous().ty {
                 TokenTy::Number(v) => Box::new(Expr::Literal(Literal::Number(v))),
@@ -178,6 +198,13 @@ impl Parser {
                 "Expected `)` after expression."
             );
             Box::new(Expr::Grouping(expr))
+        } else if self.match_1(TokenTy::Identifier("".to_string())) {
+            match self.previous().ty {
+                TokenTy::Identifier(value) => {
+                    Box::new(Expr::Variable(value))
+                },
+                _ => panic!()
+            }
         } else {
             panic!()
         }

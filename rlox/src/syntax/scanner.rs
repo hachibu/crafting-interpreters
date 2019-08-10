@@ -24,7 +24,6 @@ impl Scanner {
             (String::from("nil"), TokenTy::Nil),
             (String::from("or"), TokenTy::Or),
             (String::from("print"), TokenTy::Print),
-            (String::from("printAst"), TokenTy::PrintAst),
             (String::from("return"), TokenTy::Return),
             (String::from("super"), TokenTy::Super),
             (String::from("this"), TokenTy::This),

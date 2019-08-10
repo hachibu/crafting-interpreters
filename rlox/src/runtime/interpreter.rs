@@ -2,12 +2,14 @@ use runtime::*;
 use syntax::*;
 
 pub struct Interpreter {
+    environment: Environment,
     error: Option<String>
 }
 
 impl Interpreter {
     pub fn new() -> Interpreter {
         Interpreter {
+            environment: Environment::new(),
             error: None
         }
     }
@@ -67,8 +69,12 @@ impl Visitor<LoxObject> for Interpreter {
                 println!("{}", value);
                 LoxObject::Nil
             },
-            Stmt::PrintAst(expression) => {
-                AstPrinter::new().print_expr(expression);
+            Stmt::Var(name, initializer) => {
+                let value = match initializer {
+                    Some(expr) => self.visit_expr(expr),
+                    None => LoxObject::Nil
+                };
+                self.environment.define(name.to_string(), value);
                 LoxObject::Nil
             }
         }
@@ -162,6 +168,20 @@ impl Visitor<LoxObject> for Interpreter {
                         LoxObject::Boolean(self.is_equal(&lhs, &rhs))
                     },
                     _ => LoxObject::Nil
+                }
+            },
+            Expr::Variable(name) => {
+                match self.environment.get(name.to_string()) {
+                    Some(value) => {
+                        value.clone()
+                    },
+                    None => {
+                        self.error = Some(format!(
+                            "Undefined variable `{}`.",
+                            name
+                        ));
+                        LoxObject::Nil
+                    }
                 }
             }
         }
