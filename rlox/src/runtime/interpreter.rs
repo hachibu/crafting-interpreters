@@ -21,7 +21,6 @@ impl Interpreter {
                     break;
                 },
                 Some(stmt) => {
-                    AstPrinter::new().print(&stmt);
                     self.visit_stmt(&stmt);
                 }
             }
@@ -66,6 +65,10 @@ impl Visitor<LoxObject> for Interpreter {
             Stmt::Print(expression) => {
                 let value = self.visit_expr(expression);
                 println!("{}", value);
+                LoxObject::Nil
+            },
+            Stmt::PrintAst(expression) => {
+                AstPrinter::new().print_expr(expression);
                 LoxObject::Nil
             }
         }

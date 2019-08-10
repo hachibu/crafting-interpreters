@@ -2,5 +2,6 @@ use syntax::Expr;
 
 pub enum Stmt {
     Expr(Box<Expr>),
-    Print(Box<Expr>)
+    Print(Box<Expr>),
+    PrintAst(Box<Expr>),
 }

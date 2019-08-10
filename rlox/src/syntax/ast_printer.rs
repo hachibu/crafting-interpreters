@@ -7,8 +7,12 @@ impl AstPrinter {
         AstPrinter {}
     }
 
-    pub fn print(&mut self, s: &Stmt) {
+    pub fn print_stmt(&mut self, s: &Stmt) {
         println!("{}", self.visit_stmt(s));
+    }
+
+    pub fn print_expr(&mut self, e: &Expr) {
+        println!("{}", self.visit_expr(e));
     }
 }
 
@@ -18,6 +22,10 @@ impl Visitor<String> for AstPrinter {
             Stmt::Expr(expression) => self.visit_expr(expression),
             Stmt::Print(expression) => format!(
                 "(print {})",
+                self.visit_expr(expression)
+            ),
+            Stmt::PrintAst(expression) => format!(
+                "(printAst {})",
                 self.visit_expr(expression)
             )
         }

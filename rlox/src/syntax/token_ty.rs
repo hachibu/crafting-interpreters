@@ -32,6 +32,7 @@ pub enum TokenTy {
   Nil,
   Or,
   Print,
+  PrintAst,
   Return,
   Super,
   This,

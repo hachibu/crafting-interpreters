@@ -45,9 +45,20 @@ impl Parser {
     fn statement(&mut self) -> Box<Stmt> {
         if self.match_1(TokenTy::Print) {
             self.print_statement()
+        } else if self.match_1(TokenTy::PrintAst) {
+            self.print_ast_statement()
         } else {
             self.expression_statement()
         }
+    }
+
+    fn print_ast_statement(&mut self) -> Box<Stmt> {
+        let expr = self.expression();
+        self.consume(
+            TokenTy::Semicolon,
+            "Expected `;` after expression."
+        );
+        Box::new(Stmt::PrintAst(expr))
     }
 
     fn print_statement(&mut self) -> Box<Stmt> {

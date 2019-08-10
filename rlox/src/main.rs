@@ -11,8 +11,7 @@ use lox::Lox;
 
 fn main() {
     Lox::new().interpret("
-        print \"one\";
-        print true;
-        print 2 + 1;
+        printAst 1 + 2;
+        print 1 + 2;
     ");
 }
