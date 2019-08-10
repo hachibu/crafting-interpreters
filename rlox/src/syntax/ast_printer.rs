@@ -16,7 +16,10 @@ impl Visitor<String> for AstPrinter {
     fn visit_stmt(&mut self, s: &Stmt) -> String {
         match s {
             Stmt::Expr(expression) => self.visit_expr(expression),
-            Stmt::Print(expression) => self.visit_expr(expression)
+            Stmt::Print(expression) => format!(
+                "(print {})",
+                self.visit_expr(expression)
+            )
         }
     }
 
@@ -34,7 +37,7 @@ impl Visitor<String> for AstPrinter {
             ),
             Expr::Literal(value) => match value {
                 Literal::Number(v) => format!("{}", v),
-                Literal::String(v) => format!("{}", v),
+                Literal::String(v) => format!("{:?}", v),
                 Literal::Boolean(v) => format!("{}", v),
                 Literal::Nil => String::from("nil")
             },

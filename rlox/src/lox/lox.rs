@@ -39,12 +39,12 @@ impl<'a> Lox<'a> {
     }
 
     pub fn interpret(&mut self, line: &str) {
-        match Scanner::new(line.to_string()).scan_tokens() {
-            Ok(tokens) => match Parser::new(tokens, line.to_string()).parse() {
+        match Scanner::new(line).scan_tokens() {
+            Ok(tokens) => match Parser::new(tokens, line).parse() {
                 Ok(stmts) => {
                     for stmt in stmts {
                         AstPrinter::new().print(&stmt);
-                        println!("{:#?}", Interpreter::new().interpret(&stmt));
+                        Interpreter::new().interpret(&stmt);
                     }
                 },
                 Err(err) => println!("{}", err)

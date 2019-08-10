@@ -1,6 +1,7 @@
 use std::fmt;
 use yansi::Color;
 
+#[derive(Debug, PartialEq)]
 pub struct SyntaxError<'a> {
     pub message: &'a str,
     pub source: &'a str,

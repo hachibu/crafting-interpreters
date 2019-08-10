@@ -12,7 +12,7 @@ pub struct Scanner {
 }
 
 impl Scanner {
-    pub fn new(source: String) -> Scanner {
+    pub fn new(source: &str) -> Scanner {
         let keywords = [
             (String::from("and"), TokenTy::And),
             (String::from("class"), TokenTy::Class),
@@ -33,7 +33,7 @@ impl Scanner {
         ].iter().cloned().collect();
 
         Scanner {
-            source,
+            source: String::from(source),
             source_file: None,
             keywords,
             tokens: Vec::new(),

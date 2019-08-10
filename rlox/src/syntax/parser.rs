@@ -11,10 +11,10 @@ pub struct Parser {
 }
 
 impl Parser {
-    pub fn new(tokens: Vec<Token>, source: String) -> Parser {
+    pub fn new(tokens: Vec<Token>, source: &str) -> Parser {
         Parser {
             tokens,
-            source,
+            source: String::from(source),
             source_file: None,
             curr: 0,
             prev: 0,
@@ -51,11 +51,21 @@ impl Parser {
     }
 
     fn print_statement(&mut self) -> Box<Stmt> {
-        unimplemented!();
+        let expr = self.expression();
+        self.consume(
+            TokenTy::Semicolon,
+            "Expected `;` after expression."
+        );
+        Box::new(Stmt::Print(expr))
     }
 
     fn expression_statement(&mut self) -> Box<Stmt> {
-        Box::new(Stmt::Expr(self.expression()))
+        let expr = self.expression();
+        self.consume(
+            TokenTy::Semicolon,
+            "Expected `;` after expression."
+        );
+        Box::new(Stmt::Expr(expr))
     }
 
     fn expression(&mut self) -> Box<Expr> {
@@ -154,7 +164,7 @@ impl Parser {
             let expr = self.expression();
             self.consume(
                 TokenTy::RightParen,
-                String::from("Expected `)` after expression.")
+                "Expected `)` after expression."
             );
             Box::new(Expr::Grouping(expr))
         } else {
@@ -162,9 +172,9 @@ impl Parser {
         }
     }
 
-    fn consume(&mut self, ty: TokenTy, message: String) -> Token {
+    fn consume(&mut self, ty: TokenTy, message: &str) -> Token {
         if !self.check(&ty) {
-            self.error = Some(message);
+            self.error = Some(message.to_string());
         }
         self.advance()
     }

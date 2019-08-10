@@ -10,5 +10,9 @@ mod syntax;
 use lox::Lox;
 
 fn main() {
-    Lox::new().interpret("1 + 2 * 3");
+    Lox::new().interpret("
+        print \"one\";
+        print true;
+        print 2 + 1;
+    ");
 }

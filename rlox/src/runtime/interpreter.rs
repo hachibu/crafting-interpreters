@@ -39,7 +39,9 @@ impl Visitor<LoxObject> for Interpreter {
                 self.visit_expr(expression)
             },
             Stmt::Print(expression) => {
-                self.visit_expr(expression)
+                let value = self.visit_expr(expression);
+                println!("{}", value);
+                LoxObject::Nil
             }
         }
     }
