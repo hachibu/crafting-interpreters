@@ -1,15 +1,40 @@
 use runtime::*;
 use syntax::*;
 
-pub struct Interpreter;
+pub struct Interpreter {
+    error: Option<String>
+}
 
 impl Interpreter {
     pub fn new() -> Interpreter {
-        Interpreter {}
+        Interpreter {
+            error: None
+        }
     }
 
-    pub fn interpret(&mut self, s: &Stmt) -> LoxObject {
-        self.visit_stmt(s)
+    pub fn interpret(&mut self, stmts: Vec<Box<Stmt>>) -> Result<(), RuntimeError> {
+        let mut iter = stmts.iter();
+
+        while self.error.is_none() {
+            match iter.next() {
+                None => {
+                    break;
+                },
+                Some(stmt) => {
+                    AstPrinter::new().print(&stmt);
+                    self.visit_stmt(&stmt);
+                }
+            }
+        }
+
+        match self.error {
+            Some(ref message) => Err(
+                RuntimeError::new(&message)
+            ),
+            None => {
+                Ok(())
+            }
+        }
     }
 
     pub fn is_truthy(&mut self, o: &LoxObject) -> bool {
