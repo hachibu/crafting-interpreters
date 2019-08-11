@@ -34,7 +34,7 @@ impl Scanner {
         ].iter().cloned().collect();
 
         Scanner {
-            source: String::from(source),
+            source: source.to_string(),
             source_file: None,
             keywords,
             tokens: Vec::new(),
@@ -50,15 +50,17 @@ impl Scanner {
         }
 
         match self.error {
-            Some(ref message) => Err(
-                LoxError::new(
-                    LoxErrorTy::Syntax,
-                    &message,
-                    &self.source,
-                    &self.source_file,
-                    self.prev
+            Some(ref message) => {
+                Err(
+                    LoxError::new(
+                        LoxErrorTy::Syntax,
+                        &message,
+                        &self.source,
+                        &self.source_file,
+                        Position::new(1, self.curr - 1)
+                    )
                 )
-            ),
+            },
             None => {
                 self.push_token(TokenTy::Eof);
                 Ok(self.tokens.clone())
@@ -120,7 +122,10 @@ impl Scanner {
                 } else if c.is_alphabetic() {
                     self.scan_identifier()
                 } else {
-                    self.stop("Unexpected character.");
+                    self.stop(&format!(
+                        "Unexpected character: `{}`.",
+                        c
+                    ));
                 }
         }
     }
@@ -183,16 +188,16 @@ impl Scanner {
     }
 
     fn push_token(&mut self, ty: TokenTy) {
-        let (len, pos) = match ty {
+        let (length, offset) = match ty {
             TokenTy::Eof => (0, self.source.len()),
             _ => {
-                let len = self.curr - self.prev;
-                let pos = self.curr - len;
-                (len, pos)
+                let length = self.curr - self.prev;
+                let offset = self.curr - length;
+                (length, offset)
             }
         };
 
-        self.tokens.push(Token { ty, len, pos });
+        self.tokens.push(Token::new(ty, Position::new(length, offset)));
     }
 
     fn at_end(&self) -> bool {
@@ -263,14 +268,14 @@ mod tests {
         let mut scanner = Scanner::new("(){},.;");
 
         assert_eq!(scanner.scan_tokens(), Ok(vec![
-            Token { ty: TokenTy::LeftParen, len: 1, pos: 0 },
-            Token { ty: TokenTy::RightParen, len: 1, pos: 1 },
-            Token { ty: TokenTy::LeftBrace, len: 1, pos: 2 },
-            Token { ty: TokenTy::RightBrace, len: 1, pos: 3 },
-            Token { ty: TokenTy::Comma, len: 1, pos: 4 },
-            Token { ty: TokenTy::Dot, len: 1, pos: 5 },
-            Token { ty: TokenTy::Semicolon, len: 1, pos: 6 },
-            Token { ty: TokenTy::Eof, len: 0, pos: 7 }
+            Token::new(TokenTy::LeftParen, Position::new(1, 0)),
+            Token::new(TokenTy::RightParen, Position::new(1, 1)),
+            Token::new(TokenTy::LeftBrace, Position::new(1,  2)),
+            Token::new(TokenTy::RightBrace, Position::new(1, 3)),
+            Token::new(TokenTy::Comma, Position::new(1, 4)),
+            Token::new(TokenTy::Dot, Position::new(1, 5)),
+            Token::new(TokenTy::Semicolon, Position::new(1, 6)),
+            Token::new(TokenTy::Eof, Position::new(0, 7))
         ]));
     }
 
@@ -279,11 +284,11 @@ mod tests {
         let mut scanner = Scanner::new("+-*/");
 
         assert_eq!(scanner.scan_tokens(), Ok(vec![
-            Token { ty: TokenTy::Plus, len: 1, pos: 0 },
-            Token { ty: TokenTy::Minus, len: 1, pos: 1 },
-            Token { ty: TokenTy::Star, len: 1, pos: 2 },
-            Token { ty: TokenTy::Slash, len: 1, pos: 3 },
-            Token { ty: TokenTy::Eof, len: 0, pos: 4 }
+            Token::new(TokenTy::Plus, Position::new(1, 0)),
+            Token::new(TokenTy::Minus, Position::new(1, 1)),
+            Token::new(TokenTy::Star, Position::new(1, 2)),
+            Token::new(TokenTy::Slash, Position::new(1, 3)),
+            Token::new(TokenTy::Eof, Position::new(0, 4))
         ]));
     }
 
@@ -292,14 +297,14 @@ mod tests {
         let mut scanner = Scanner::new("! != = == > >= <=");
 
         assert_eq!(scanner.scan_tokens(), Ok(vec![
-            Token { ty: TokenTy::Bang, len: 1, pos: 0 },
-            Token { ty: TokenTy::BangEqual, len: 2, pos: 2 },
-            Token { ty: TokenTy::Equal, len: 1, pos: 5 },
-            Token { ty: TokenTy::EqualEqual, len: 2, pos: 7 },
-            Token { ty: TokenTy::Greater, len: 1, pos: 10 },
-            Token { ty: TokenTy::GreaterEqual, len: 2, pos: 12 },
-            Token { ty: TokenTy::LessEqual, len: 2, pos: 15 },
-            Token { ty: TokenTy::Eof, len: 0, pos: 17 }
+            Token::new(TokenTy::Bang, Position::new(1, 0)),
+            Token::new(TokenTy::BangEqual, Position::new(2, 2)),
+            Token::new(TokenTy::Equal, Position::new(1, 5)),
+            Token::new(TokenTy::EqualEqual, Position::new(2, 7)),
+            Token::new(TokenTy::Greater, Position::new(1, 10)),
+            Token::new(TokenTy::GreaterEqual, Position::new(2, 12)),
+            Token::new(TokenTy::LessEqual, Position::new(2, 15)),
+            Token::new(TokenTy::Eof, Position::new(0, 17))
         ]));
     }
 
@@ -308,9 +313,9 @@ mod tests {
         let mut scanner = Scanner::new("true false");
 
         assert_eq!(scanner.scan_tokens(), Ok(vec![
-            Token { ty: TokenTy::True, len: 4, pos: 0 },
-            Token { ty: TokenTy::False, len: 5, pos: 5 },
-            Token { ty: TokenTy::Eof, len: 0, pos: 10 }
+            Token::new(TokenTy::True, Position::new(4, 0)),
+            Token::new(TokenTy::False, Position::new(5, 5)),
+            Token::new(TokenTy::Eof, Position::new(0, 10))
         ]));
     }
 
@@ -319,9 +324,9 @@ mod tests {
         let mut scanner = Scanner::new("1 2.0");
 
         assert_eq!(scanner.scan_tokens(), Ok(vec![
-            Token { ty: TokenTy::Number(1.0), len: 1, pos: 0 },
-            Token { ty: TokenTy::Number(2.0), len: 3, pos: 2 },
-            Token { ty: TokenTy::Eof, len: 0, pos: 5 }
+            Token::new(TokenTy::Number(1.0), Position::new(1, 0)),
+            Token::new(TokenTy::Number(2.0), Position::new(3, 2)),
+            Token::new(TokenTy::Eof, Position::new(0, 5))
         ]));
     }
 
@@ -330,8 +335,8 @@ mod tests {
         let mut scanner = Scanner::new("\"string\"");
 
         assert_eq!(scanner.scan_tokens(), Ok(vec![
-            Token { ty: TokenTy::String(String::from("string")), len: 8, pos: 0 },
-            Token { ty: TokenTy::Eof, len: 0, pos: 8 }
+            Token::new(TokenTy::String("string".to_string()), Position::new(8, 0)),
+            Token::new(TokenTy::Eof, Position::new(0, 8))
         ]));
     }
 
@@ -346,7 +351,7 @@ mod tests {
         let mut scanner = Scanner::new(source);
 
         assert_eq!(scanner.scan_tokens(), Ok(vec![
-            Token { ty: TokenTy::Eof, len: 0, pos: source.len() }
+            Token::new(TokenTy::Eof, Position::new(0, source.len()))
         ]));
     }
 
@@ -355,10 +360,10 @@ mod tests {
         let mut scanner = Scanner::new("a a0 a_0");
 
         assert_eq!(scanner.scan_tokens(), Ok(vec![
-            Token { ty: TokenTy::Identifier(String::from("a")), len: 1, pos: 0 },
-            Token { ty: TokenTy::Identifier(String::from("a0")), len: 2, pos: 2 },
-            Token { ty: TokenTy::Identifier(String::from("a_0")), len: 3, pos: 5 },
-            Token { ty: TokenTy::Eof, len: 0, pos: 8 }
+            Token::new(TokenTy::Identifier("a".to_string()), Position::new(1, 0)),
+            Token::new(TokenTy::Identifier("a0".to_string()), Position::new(2, 2)),
+            Token::new(TokenTy::Identifier("a_0".to_string()), Position::new(3, 5)),
+            Token::new(TokenTy::Eof, Position::new(0, 8))
         ]));
     }
 
@@ -384,23 +389,23 @@ mod tests {
         ");
 
         assert_eq!(scanner.scan_tokens(), Ok(vec![
-            Token { ty: TokenTy::And, len: 3, pos: 13 },
-            Token { ty: TokenTy::Class, len: 5, pos: 29 },
-            Token { ty: TokenTy::Else, len: 4, pos: 47 },
-            Token { ty: TokenTy::False, len: 5, pos: 64 },
-            Token { ty: TokenTy::For, len: 3, pos: 82 },
-            Token { ty: TokenTy::Fun, len: 3, pos: 98 },
-            Token { ty: TokenTy::If, len: 2, pos: 114 },
-            Token { ty: TokenTy::Nil, len: 3, pos: 129 },
-            Token { ty: TokenTy::Or, len: 2, pos: 145 },
-            Token { ty: TokenTy::Print, len: 5, pos: 160 },
-            Token { ty: TokenTy::Return, len: 6, pos: 178 },
-            Token { ty: TokenTy::Super, len: 5, pos: 197 },
-            Token { ty: TokenTy::This, len: 4, pos: 215 },
-            Token { ty: TokenTy::True, len: 4, pos: 232 },
-            Token { ty: TokenTy::Var, len: 3, pos: 249 },
-            Token { ty: TokenTy::While, len: 5, pos: 265 },
-            Token { ty: TokenTy::Eof, len: 0, pos: 279 }
+            Token::new(TokenTy::And, Position::new(3, 13)),
+            Token::new(TokenTy::Class, Position::new(5, 29)),
+            Token::new(TokenTy::Else, Position::new(4, 47)),
+            Token::new(TokenTy::False, Position::new(5, 64)),
+            Token::new(TokenTy::For, Position::new(3, 82)),
+            Token::new(TokenTy::Fun, Position::new(3, 98)),
+            Token::new(TokenTy::If, Position::new(2, 114)),
+            Token::new(TokenTy::Nil, Position::new(3, 129)),
+            Token::new(TokenTy::Or, Position::new(2, 145)),
+            Token::new(TokenTy::Print, Position::new(5, 160)),
+            Token::new(TokenTy::Return, Position::new(6, 178)),
+            Token::new(TokenTy::Super, Position::new(5, 197)),
+            Token::new(TokenTy::This, Position::new(4, 215)),
+            Token::new(TokenTy::True, Position::new(4, 232)),
+            Token::new(TokenTy::Var, Position::new(3, 249)),
+            Token::new(TokenTy::While, Position::new(5, 265)),
+            Token::new(TokenTy::Eof, Position::new(0, 279))
         ]));
     }
 }

@@ -41,6 +41,7 @@ impl<'a> Lox<'a> {
     }
 
     pub fn interpret(&mut self, source: &str) {
+        self.interpreter.reset();
         match Scanner::new(source).scan_tokens() {
             Ok(tokens) => match Parser::new(tokens, source).parse() {
                 Ok(stmts) => match self.interpreter.interpret(stmts, source) {

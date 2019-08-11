@@ -1,17 +1,21 @@
+pub mod ast_position;
 pub mod ast_printer;
 pub mod expr;
 pub mod literal;
 pub mod parser;
+pub mod position;
 pub mod scanner;
 pub mod stmt;
 pub mod token;
 pub mod token_ty;
 pub mod visitor;
 
+pub use self::ast_position::*;
 pub use self::ast_printer::*;
 pub use self::expr::*;
 pub use self::literal::*;
 pub use self::parser::*;
+pub use self::position::*;
 pub use self::scanner::*;
 pub use self::stmt::*;
 pub use self::token::*;

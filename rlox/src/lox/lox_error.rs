@@ -1,4 +1,5 @@
 use lox::*;
+use syntax::*;
 use std::fmt;
 use yansi::Color;
 
@@ -8,19 +9,19 @@ pub struct LoxError<'a> {
     pub message: &'a str,
     pub source: &'a str,
     pub source_file: &'a Option<String>,
-    pub prev: usize
+    pub position: Position
 }
 
 impl<'a> LoxError<'a> {
-    pub fn new(ty: LoxErrorTy, message: &'a str, source: &'a str, source_file: &'a Option<String>, prev: usize) -> LoxError<'a> {
-        LoxError { ty, message, source, source_file, prev }
+    pub fn new(ty: LoxErrorTy, message: &'a str, source: &'a str, source_file: &'a Option<String>, position: Position) -> LoxError<'a> {
+        LoxError { ty, message, source, source_file, position }
     }
 }
 
 impl<'a> fmt::Display for LoxError<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let err_lines: Vec<&str> =
-            self.source.get(0..self.prev).unwrap_or("")
+            self.source.get(0..self.position.offset).unwrap_or("")
                        .lines()
                        .collect();
 
@@ -41,7 +42,6 @@ impl<'a> fmt::Display for LoxError<'a> {
             } else {
                 lines.get(err_line - 1).unwrap()
             };
-
         let curr_line_num: String = format!("{} | ", err_line + 1);
         let curr_line_ptr: String = format!(
             "{}^",

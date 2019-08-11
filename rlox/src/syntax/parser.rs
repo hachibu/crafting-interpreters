@@ -7,7 +7,6 @@ pub struct Parser {
     source: String,
     pub source_file: Option<String>,
     curr: usize,
-    prev: usize,
     error: Option<String>
 }
 
@@ -18,7 +17,6 @@ impl Parser {
             source: String::from(source),
             source_file: None,
             curr: 0,
-            prev: 0,
             error: None
         }
     }
@@ -30,6 +28,8 @@ impl Parser {
             statements.push(self.declaration());
         }
 
+        let previous = self.previous();
+
         match self.error {
             Some(ref message) => Err(
                 LoxError::new(
@@ -37,7 +37,7 @@ impl Parser {
                     &message,
                     &self.source,
                     &self.source_file,
-                    self.prev
+                    previous.position
                 )
             ),
             None => Ok(statements)
@@ -72,7 +72,7 @@ impl Parser {
             "Expected `;` after variable declaration."
         );
 
-        Box::new(Stmt::Var(value, initializer, self.source_map()))
+        Box::new(Stmt::Var(value, initializer, self.position()))
     }
 
     fn statement(&mut self) -> Box<Stmt> {
@@ -89,7 +89,7 @@ impl Parser {
             TokenTy::Semicolon,
             "Expected `;` after expression."
         );
-        Box::new(Stmt::Print(expr, self.source_map()))
+        Box::new(Stmt::Print(expr, self.position()))
     }
 
     fn expression_statement(&mut self) -> Box<Stmt> {
@@ -98,7 +98,7 @@ impl Parser {
             TokenTy::Semicolon,
             "Expected `;` after expression."
         );
-        Box::new(Stmt::Expr(expr, self.source_map()))
+        Box::new(Stmt::Expr(expr, self.position()))
     }
 
     fn expression(&mut self) -> Box<Expr> {
@@ -113,7 +113,7 @@ impl Parser {
             let right = self.comparison();
 
             expr = Box::new(
-                Expr::Binary(expr, operator, right, self.source_map())
+                Expr::Binary(expr, operator, right, self.position())
             );
         }
 
@@ -133,7 +133,7 @@ impl Parser {
             let right = self.addition();
 
             expr = Box::new(
-                Expr::Binary(expr, operator, right, self.source_map())
+                Expr::Binary(expr, operator, right, self.position())
             );
         }
 
@@ -148,7 +148,7 @@ impl Parser {
             let right = self.multiplication();
 
             expr = Box::new(
-                Expr::Binary(expr, operator, right, self.source_map())
+                Expr::Binary(expr, operator, right, self.position())
             );
         }
 
@@ -163,7 +163,7 @@ impl Parser {
             let right = self.unary();
 
             expr = Box::new(
-                Expr::Binary(expr, operator, right, self.source_map())
+                Expr::Binary(expr, operator, right, self.position())
             );
         }
 
@@ -176,7 +176,7 @@ impl Parser {
             let right = self.unary();
 
             Box::new(
-                Expr::Unary(operator, right, self.source_map())
+                Expr::Unary(operator, right, self.position())
             )
         } else {
             self.primary()
@@ -185,13 +185,13 @@ impl Parser {
 
     fn primary(&mut self) -> Box<Expr> {
         if self.match_1(TokenTy::False) {
-            Box::new(Expr::Literal(Literal::Boolean(false), self.source_map()))
+            Box::new(Expr::Literal(Literal::Boolean(false), self.position()))
         }
         else if self.match_1(TokenTy::True) {
-            Box::new(Expr::Literal(Literal::Boolean(true), self.source_map()))
+            Box::new(Expr::Literal(Literal::Boolean(true), self.position()))
         }
         else if self.match_1(TokenTy::Nil) {
-            Box::new(Expr::Literal(Literal::Nil, self.source_map()))
+            Box::new(Expr::Literal(Literal::Nil, self.position()))
         }
         else if self.match_2(
             TokenTy::Number(0.0),
@@ -199,10 +199,10 @@ impl Parser {
         ) {
             match self.previous().ty {
                 TokenTy::Number(v) => Box::new(
-                    Expr::Literal(Literal::Number(v), self.source_map())
+                    Expr::Literal(Literal::Number(v), self.position())
                 ),
                 TokenTy::String(v) => Box::new(
-                    Expr::Literal(Literal::String(v), self.source_map())
+                    Expr::Literal(Literal::String(v), self.position())
                 ),
                 _ => panic!()
             }
@@ -213,22 +213,28 @@ impl Parser {
                 TokenTy::RightParen,
                 "Expected `)` after expression."
             );
-            Box::new(Expr::Grouping(expr, self.source_map()))
+            Box::new(Expr::Grouping(expr, self.position()))
         } else if self.match_1(TokenTy::Identifier("".to_string())) {
             match self.previous().ty {
                 TokenTy::Identifier(value) => {
-                    Box::new(Expr::Variable(value, self.source_map()))
+                    Box::new(Expr::Variable(value, self.position()))
                 },
                 _ => panic!()
             }
         } else {
-            panic!()
+            self.error = Some(format!(
+                "Unexpected `{}`.",
+                self.previous().to_string()
+            ));
+            Box::new(Expr::Literal(Literal::Nil, self.position()))
         }
     }
 
     fn consume(&mut self, ty: TokenTy, message: &str) -> Token {
         if !self.check(&ty) {
-            self.error = Some(message.to_string());
+            if self.error.is_none() {
+                self.error = Some(message.to_string());
+            }
         }
         self.advance()
     }
@@ -267,9 +273,7 @@ impl Parser {
         if !self.is_at_end() {
             self.curr += 1;
         }
-        let previous = self.previous();
-        self.prev = previous.pos;
-        previous
+        self.previous()
     }
 
     fn is_at_end(&self) -> bool {
@@ -281,14 +285,21 @@ impl Parser {
     }
 
     fn previous(&mut self) -> Token {
-        self.get_token(self.curr - 1)
+        self.get_token(
+            match self.curr {
+                0 => self.curr,
+                _ => self.curr - 1
+            }
+        )
     }
 
     fn get_token(&self, index: usize) -> Token {
         self.tokens.get(index).unwrap().clone()
     }
 
-    fn source_map(&self) -> SourceMap {
-        SourceMap::new(self.prev)
+    fn position(&mut self) -> Position {
+        self.previous().position
     }
 }
+
+// TODO: Start adding tests to avoid regressions.

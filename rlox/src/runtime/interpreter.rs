@@ -43,13 +43,13 @@ impl Interpreter {
 
         match self.error {
             Some(ref message) => {
-                let prev = match last {
+                let position = match last {
                     Some(stmt) => match **stmt {
-                        Stmt::Expr(_, source_map) => source_map.offset,
-                        Stmt::Print(_, source_map) => source_map.offset,
-                        Stmt::Var(_, _, source_map) => source_map.offset,
+                        Stmt::Expr(_, position) => position,
+                        Stmt::Print(_, position) => position,
+                        Stmt::Var(_, _, position) => position,
                     },
-                    None => 0
+                    None => Position::new(0, 0)
                 };
 
                 Err(
@@ -58,7 +58,7 @@ impl Interpreter {
                         &message,
                         &self.source,
                         &self.source_file,
-                        prev
+                        position
                     )
                 )
             },
@@ -86,6 +86,10 @@ impl Interpreter {
             (_, _) => false
         }
     }
+
+    pub fn reset(&mut self) {
+        self.error = None;
+    }
 }
 
 impl Visitor<LoxObject> for Interpreter {
@@ -96,7 +100,9 @@ impl Visitor<LoxObject> for Interpreter {
             },
             Stmt::Print(expression, _) => {
                 let value = self.visit_expr(expression);
-                println!("{}", value);
+                if self.error.is_none() {
+                    println!("{}", value);
+                }
                 LoxObject::Nil
             },
             Stmt::Var(name, initializer, _) => {
