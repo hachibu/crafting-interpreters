@@ -4,7 +4,7 @@ use syntax::*;
 
 pub struct Scanner {
     tokens: Vec<Token>,
-    keywords: HashMap<String, TokenTy>,
+    keywords: HashMap<&'static str, TokenTy>,
     source: String,
     pub source_file: Option<String>,
     curr: usize,
@@ -15,22 +15,22 @@ pub struct Scanner {
 impl Scanner {
     pub fn new(source: &str) -> Scanner {
         let keywords = [
-            (String::from("and"), TokenTy::And),
-            (String::from("class"), TokenTy::Class),
-            (String::from("else"), TokenTy::Else),
-            (String::from("false"), TokenTy::False),
-            (String::from("for"), TokenTy::For),
-            (String::from("fun"), TokenTy::Fun),
-            (String::from("if"), TokenTy::If),
-            (String::from("nil"), TokenTy::Nil),
-            (String::from("or"), TokenTy::Or),
-            (String::from("print"), TokenTy::Print),
-            (String::from("return"), TokenTy::Return),
-            (String::from("super"), TokenTy::Super),
-            (String::from("this"), TokenTy::This),
-            (String::from("true"), TokenTy::True),
-            (String::from("var"), TokenTy::Var),
-            (String::from("while"), TokenTy::While)
+            ("and", TokenTy::And),
+            ("class", TokenTy::Class),
+            ("else", TokenTy::Else),
+            ("false", TokenTy::False),
+            ("for", TokenTy::For),
+            ("fun", TokenTy::Fun),
+            ("if", TokenTy::If),
+            ("nil", TokenTy::Nil),
+            ("or", TokenTy::Or),
+            ("print", TokenTy::Print),
+            ("return", TokenTy::Return),
+            ("super", TokenTy::Super),
+            ("this", TokenTy::This),
+            ("true", TokenTy::True),
+            ("var", TokenTy::Var),
+            ("while", TokenTy::While)
         ].iter().cloned().collect();
 
         Scanner {
