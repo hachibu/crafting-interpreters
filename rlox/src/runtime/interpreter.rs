@@ -6,8 +6,7 @@ pub struct Interpreter {
     environment: Environment,
     error: Option<String>,
     source: String,
-    pub source_file: Option<String>,
-    prev: usize
+    pub source_file: Option<String>
 }
 
 impl Interpreter {
@@ -16,8 +15,7 @@ impl Interpreter {
             environment: Environment::new(),
             error: None,
             source: "".to_string(),
-            source_file: None,
-            prev: 0
+            source_file: None
         }
     }
 

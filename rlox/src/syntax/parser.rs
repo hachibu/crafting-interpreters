@@ -1,5 +1,5 @@
-use std::mem::discriminant;
 use lox::*;
+use std::mem::discriminant;
 use syntax::*;
 
 pub struct Parser {
@@ -267,7 +267,9 @@ impl Parser {
         if !self.is_at_end() {
             self.curr += 1;
         }
-        self.previous()
+        let previous = self.previous();
+        self.prev = previous.pos;
+        previous
     }
 
     fn is_at_end(&self) -> bool {
@@ -275,13 +277,15 @@ impl Parser {
     }
 
     fn peek(&self) -> Token {
-        self.tokens.get(self.curr).unwrap().clone()
+        self.get_token(self.curr)
     }
 
     fn previous(&mut self) -> Token {
-        let previous = self.tokens.get(self.curr - 1).unwrap().clone();
-        self.prev = previous.pos;
-        previous
+        self.get_token(self.curr - 1)
+    }
+
+    fn get_token(&self, index: usize) -> Token {
+        self.tokens.get(index).unwrap().clone()
     }
 
     fn source_map(&self) -> SourceMap {
