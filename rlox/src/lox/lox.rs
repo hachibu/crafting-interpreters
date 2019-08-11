@@ -43,7 +43,7 @@ impl<'a> Lox<'a> {
     pub fn interpret(&mut self, source: &str) {
         match Scanner::new(source).scan_tokens() {
             Ok(tokens) => match Parser::new(tokens, source).parse() {
-                Ok(stmts) => match self.interpreter.interpret(stmts) {
+                Ok(stmts) => match self.interpreter.interpret(stmts, source) {
                     Ok(_) => {},
                     Err(err) => println!("{}", err)
                 },

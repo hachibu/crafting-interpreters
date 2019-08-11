@@ -1,4 +1,5 @@
 use std::mem::discriminant;
+use lox::*;
 use syntax::*;
 
 pub struct Parser {
@@ -22,7 +23,7 @@ impl Parser {
         }
     }
 
-    pub fn parse(&mut self) -> Result<Vec<Box<Stmt>>, SyntaxError> {
+    pub fn parse(&mut self) -> Result<Vec<Box<Stmt>>, LoxError> {
         let mut statements = Vec::new();
 
         while !self.is_at_end() {
@@ -31,7 +32,8 @@ impl Parser {
 
         match self.error {
             Some(ref message) => Err(
-                SyntaxError::new(
+                LoxError::new(
+                    LoxErrorTy::Syntax,
                     &message,
                     &self.source,
                     &self.source_file,
@@ -70,7 +72,7 @@ impl Parser {
             "Expected `;` after variable declaration."
         );
 
-        Box::new(Stmt::Var(value, initializer))
+        Box::new(Stmt::Var(value, initializer, self.source_map()))
     }
 
     fn statement(&mut self) -> Box<Stmt> {
@@ -87,7 +89,7 @@ impl Parser {
             TokenTy::Semicolon,
             "Expected `;` after expression."
         );
-        Box::new(Stmt::Print(expr))
+        Box::new(Stmt::Print(expr, self.source_map()))
     }
 
     fn expression_statement(&mut self) -> Box<Stmt> {
@@ -96,7 +98,7 @@ impl Parser {
             TokenTy::Semicolon,
             "Expected `;` after expression."
         );
-        Box::new(Stmt::Expr(expr))
+        Box::new(Stmt::Expr(expr, self.source_map()))
     }
 
     fn expression(&mut self) -> Box<Expr> {
@@ -110,7 +112,9 @@ impl Parser {
             let operator = self.previous();
             let right = self.comparison();
 
-            expr = Box::new(Expr::Binary(expr, operator, right));
+            expr = Box::new(
+                Expr::Binary(expr, operator, right, self.source_map())
+            );
         }
 
         expr
@@ -128,7 +132,9 @@ impl Parser {
             let operator = self.previous();
             let right = self.addition();
 
-            expr = Box::new(Expr::Binary(expr, operator, right));
+            expr = Box::new(
+                Expr::Binary(expr, operator, right, self.source_map())
+            );
         }
 
         expr
@@ -141,7 +147,9 @@ impl Parser {
             let operator = self.previous();
             let right = self.multiplication();
 
-            expr = Box::new(Expr::Binary(expr, operator, right));
+            expr = Box::new(
+                Expr::Binary(expr, operator, right, self.source_map())
+            );
         }
 
         expr
@@ -154,7 +162,9 @@ impl Parser {
             let operator = self.previous();
             let right = self.unary();
 
-            expr = Box::new(Expr::Binary(expr, operator, right));
+            expr = Box::new(
+                Expr::Binary(expr, operator, right, self.source_map())
+            );
         }
 
         expr
@@ -165,7 +175,9 @@ impl Parser {
             let operator = self.previous();
             let right = self.unary();
 
-            Box::new(Expr::Unary(operator, right))
+            Box::new(
+                Expr::Unary(operator, right, self.source_map())
+            )
         } else {
             self.primary()
         }
@@ -173,21 +185,25 @@ impl Parser {
 
     fn primary(&mut self) -> Box<Expr> {
         if self.match_1(TokenTy::False) {
-            Box::new(Expr::Literal(Literal::Boolean(false)))
+            Box::new(Expr::Literal(Literal::Boolean(false), self.source_map()))
         }
         else if self.match_1(TokenTy::True) {
-            Box::new(Expr::Literal(Literal::Boolean(true)))
+            Box::new(Expr::Literal(Literal::Boolean(true), self.source_map()))
         }
         else if self.match_1(TokenTy::Nil) {
-            Box::new(Expr::Literal(Literal::Nil))
+            Box::new(Expr::Literal(Literal::Nil, self.source_map()))
         }
         else if self.match_2(
             TokenTy::Number(0.0),
             TokenTy::String("".to_string())
         ) {
             match self.previous().ty {
-                TokenTy::Number(v) => Box::new(Expr::Literal(Literal::Number(v))),
-                TokenTy::String(v) => Box::new(Expr::Literal(Literal::String(v))),
+                TokenTy::Number(v) => Box::new(
+                    Expr::Literal(Literal::Number(v), self.source_map())
+                ),
+                TokenTy::String(v) => Box::new(
+                    Expr::Literal(Literal::String(v), self.source_map())
+                ),
                 _ => panic!()
             }
         }
@@ -197,11 +213,11 @@ impl Parser {
                 TokenTy::RightParen,
                 "Expected `)` after expression."
             );
-            Box::new(Expr::Grouping(expr))
+            Box::new(Expr::Grouping(expr, self.source_map()))
         } else if self.match_1(TokenTy::Identifier("".to_string())) {
             match self.previous().ty {
                 TokenTy::Identifier(value) => {
-                    Box::new(Expr::Variable(value))
+                    Box::new(Expr::Variable(value, self.source_map()))
                 },
                 _ => panic!()
             }
@@ -266,5 +282,9 @@ impl Parser {
         let previous = self.tokens.get(self.curr - 1).unwrap().clone();
         self.prev = previous.pos;
         previous
+    }
+
+    fn source_map(&self) -> SourceMap {
+        SourceMap::new(self.prev)
     }
 }

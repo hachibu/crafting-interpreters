@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use lox::*;
 use syntax::*;
 
 pub struct Scanner {
@@ -43,14 +44,15 @@ impl Scanner {
         }
     }
 
-    pub fn scan_tokens(&mut self) -> Result<Vec<Token>, SyntaxError> {
+    pub fn scan_tokens(&mut self) -> Result<Vec<Token>, LoxError> {
         while !self.at_end() {
             self.scan_token();
         }
 
         match self.error {
             Some(ref message) => Err(
-                SyntaxError::new(
+                LoxError::new(
+                    LoxErrorTy::Syntax,
                     &message,
                     &self.source,
                     &self.source_file,

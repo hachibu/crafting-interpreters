@@ -19,12 +19,12 @@ impl AstPrinter {
 impl Visitor<String> for AstPrinter {
     fn visit_stmt(&mut self, s: &Stmt) -> String {
         match s {
-            Stmt::Expr(expression) => self.visit_expr(expression),
-            Stmt::Print(expression) => format!(
+            Stmt::Expr(expression, _) => self.visit_expr(expression),
+            Stmt::Print(expression, _) => format!(
                 "(print {})",
                 self.visit_expr(expression)
             ),
-            Stmt::Var(name, initializer) => match initializer {
+            Stmt::Var(name, initializer, _) => match initializer {
                 Some(expr) => format!(
                     "(var {} {})",
                     name,
@@ -40,28 +40,28 @@ impl Visitor<String> for AstPrinter {
 
     fn visit_expr(&mut self, e: &Expr) -> String {
         match e {
-            Expr::Binary(left, operator, right) => format!(
+            Expr::Binary(left, operator, right, _) => format!(
                 "({} {} {})",
                 operator.to_string(),
                 self.visit_expr(left),
                 self.visit_expr(right)
             ),
-            Expr::Grouping(expression) => format!(
+            Expr::Grouping(expression, _) => format!(
                 "({})",
                 self.visit_expr(expression)
             ),
-            Expr::Literal(value) => match value {
+            Expr::Literal(value, _) => match value {
                 Literal::Number(v) => format!("{}", v),
                 Literal::String(v) => format!("{:?}", v),
                 Literal::Boolean(v) => format!("{}", v),
                 Literal::Nil => String::from("nil")
             },
-            Expr::Unary(operator, right) => format!(
+            Expr::Unary(operator, right, _) => format!(
                 "({} {})",
                 operator.to_string(),
                 self.visit_expr(right)
             ),
-            Expr::Variable(name) => format!(
+            Expr::Variable(name, _) => format!(
                 "{}",
                  name
             )

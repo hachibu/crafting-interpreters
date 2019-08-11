@@ -2,20 +2,37 @@ use std::fmt;
 use yansi::Color;
 
 #[derive(Debug, PartialEq)]
-pub struct SyntaxError<'a> {
+pub enum LoxErrorTy {
+    Runtime,
+    Syntax
+}
+
+impl fmt::Display for LoxErrorTy {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let s = match self {
+            LoxErrorTy::Runtime => "RuntimeError",
+            LoxErrorTy::Syntax => "SyntaxError"
+        };
+        write!(f, "{}", s)
+    }
+}
+
+#[derive(Debug, PartialEq)]
+pub struct LoxError<'a> {
+    pub ty: LoxErrorTy,
     pub message: &'a str,
     pub source: &'a str,
     pub source_file: &'a Option<String>,
     pub prev: usize
 }
 
-impl<'a> SyntaxError<'a> {
-    pub fn new(message: &'a str, source: &'a str, source_file: &'a Option<String>, prev: usize) -> SyntaxError<'a> {
-        SyntaxError { message, source, source_file, prev }
+impl<'a> LoxError<'a> {
+    pub fn new(ty: LoxErrorTy, message: &'a str, source: &'a str, source_file: &'a Option<String>, prev: usize) -> LoxError<'a> {
+        LoxError { ty, message, source, source_file, prev }
     }
 }
 
-impl<'a> fmt::Display for SyntaxError<'a> {
+impl<'a> fmt::Display for LoxError<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let err_lines: Vec<&str> =
             self.source.get(0..self.prev).unwrap_or("")
@@ -64,7 +81,7 @@ impl<'a> fmt::Display for SyntaxError<'a> {
                 None => String::from("")
             },
             file_line_num = Color::Blue.paint(file_line_num),
-            error = Color::Red.paint("SyntaxError"),
+            error = Color::Red.paint(&self.ty),
             err_msg = self.message,
             err_line = err_line + 1,
             err_col = err_col + 1,

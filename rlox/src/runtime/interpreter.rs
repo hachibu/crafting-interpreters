@@ -1,21 +1,35 @@
+use lox::*;
 use runtime::*;
 use syntax::*;
 
 pub struct Interpreter {
     environment: Environment,
-    error: Option<String>
+    error: Option<String>,
+    source: String,
+    pub source_file: Option<String>,
+    prev: usize
 }
 
 impl Interpreter {
     pub fn new() -> Interpreter {
         Interpreter {
             environment: Environment::new(),
-            error: None
+            error: None,
+            source: "".to_string(),
+            source_file: None,
+            prev: 0
         }
     }
 
-    pub fn interpret(&mut self, stmts: Vec<Box<Stmt>>) -> Result<(), RuntimeError> {
+    pub fn interpret(
+        &mut self,
+        stmts: Vec<Box<Stmt>>,
+        source: &str
+    ) -> Result<(), LoxError> {
+        self.source = source.to_string();
+
         let mut iter = stmts.iter();
+        let mut last = None;
 
         while self.error.is_none() {
             match iter.next() {
@@ -23,15 +37,33 @@ impl Interpreter {
                     break;
                 },
                 Some(stmt) => {
+                    last = Some(stmt);
                     self.visit_stmt(&stmt);
                 }
             }
         }
 
         match self.error {
-            Some(ref message) => Err(
-                RuntimeError::new(&message)
-            ),
+            Some(ref message) => {
+                let prev = match last {
+                    Some(stmt) => match **stmt {
+                        Stmt::Expr(_, source_map) => source_map.offset,
+                        Stmt::Print(_, source_map) => source_map.offset,
+                        Stmt::Var(_, _, source_map) => source_map.offset,
+                    },
+                    None => 0
+                };
+
+                Err(
+                    LoxError::new(
+                        LoxErrorTy::Runtime,
+                        &message,
+                        &self.source,
+                        &self.source_file,
+                        prev
+                    )
+                )
+            },
             None => {
                 Ok(())
             }
@@ -61,15 +93,15 @@ impl Interpreter {
 impl Visitor<LoxObject> for Interpreter {
     fn visit_stmt(&mut self, s: &Stmt) -> LoxObject {
         match s {
-            Stmt::Expr(expression) => {
+            Stmt::Expr(expression, _) => {
                 self.visit_expr(expression)
             },
-            Stmt::Print(expression) => {
+            Stmt::Print(expression, _) => {
                 let value = self.visit_expr(expression);
                 println!("{}", value);
                 LoxObject::Nil
             },
-            Stmt::Var(name, initializer) => {
+            Stmt::Var(name, initializer, _) => {
                 let value = match initializer {
                     Some(expr) => self.visit_expr(expr),
                     None => LoxObject::Nil
@@ -82,16 +114,16 @@ impl Visitor<LoxObject> for Interpreter {
 
     fn visit_expr(&mut self, e: &Expr) -> LoxObject {
         match e {
-            Expr::Grouping(expression) => {
+            Expr::Grouping(expression, _) => {
                 self.visit_expr(expression)
             },
-            Expr::Literal(value) => match value {
+            Expr::Literal(value, _) => match value {
                 Literal::Number(v) => LoxObject::Number(*v),
                 Literal::String(v) => LoxObject::String(v.to_string()),
                 Literal::Boolean(v) => LoxObject::Boolean(*v),
                 Literal::Nil => LoxObject::Nil
             },
-            Expr::Unary(operator, right) => {
+            Expr::Unary(operator, right, _) => {
                 let object = self.visit_expr(right);
 
                 match operator.ty {
@@ -105,7 +137,7 @@ impl Visitor<LoxObject> for Interpreter {
                     _ => object
                 }
             },
-            Expr::Binary(left, operator, right) => {
+            Expr::Binary(left, operator, right, _) => {
                 let lhs = self.visit_expr(left);
                 let rhs = self.visit_expr(right);
 
@@ -170,7 +202,7 @@ impl Visitor<LoxObject> for Interpreter {
                     _ => LoxObject::Nil
                 }
             },
-            Expr::Variable(name) => {
+            Expr::Variable(name, _) => {
                 match self.environment.get(name.to_string()) {
                     Some(value) => {
                         value.clone()
