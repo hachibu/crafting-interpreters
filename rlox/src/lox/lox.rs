@@ -37,7 +37,7 @@ impl<'a> Lox<'a> {
                 }
             }
         }
-        self.editor.save_history(self.history_file).unwrap();
+        self.editor.save_history(self.history_file).unwrap_or(());
     }
 
     pub fn interpret(&mut self, source: &str) {

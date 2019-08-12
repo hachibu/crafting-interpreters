@@ -292,7 +292,10 @@ impl Parser {
     }
 
     fn get_token(&self, index: usize) -> Token {
-        self.tokens.get(index).unwrap().clone()
+        match self.tokens.get(index) {
+            Some(token) => token.clone(),
+            None => Token::new(TokenTy::Eof, Position::new(0, self.curr))
+        }
     }
 
     fn position(&mut self) -> Position {

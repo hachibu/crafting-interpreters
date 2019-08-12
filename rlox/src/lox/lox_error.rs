@@ -13,18 +13,23 @@ pub struct LoxError<'a> {
 }
 
 impl<'a> LoxError<'a> {
-    pub fn new(ty: LoxErrorTy, message: &'a str, source: &'a str, source_file: &'a Option<String>, position: Position) -> LoxError<'a> {
+    pub fn new(
+        ty: LoxErrorTy,
+        message: &'a str,
+        source: &'a str,
+        source_file: &'a Option<String>,
+        position: Position
+    ) -> LoxError<'a> {
         LoxError { ty, message, source, source_file, position }
     }
 }
 
 impl<'a> fmt::Display for LoxError<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let err_lines: Vec<&str> =
-            self.source.get(0..self.position.offset).unwrap_or("")
-                       .lines()
-                       .collect();
-
+        let err_lines: Vec<&str> = self.source.get(0..self.position.offset)
+                                              .unwrap_or("")
+                                              .lines()
+                                              .collect();
         let (err_line, err_col) =
             if err_lines.len() == 0 {
                 (0, 0)
@@ -63,7 +68,7 @@ impl<'a> fmt::Display for LoxError<'a> {
 {curr_line_ptr}",
             file = match self.source_file {
                 Some(ref s) => format!("{}:", s),
-                None => String::from("")
+                None => "".to_string()
             },
             file_line_num = Color::Blue.paint(file_line_num),
             error = Color::Red.paint(&self.ty),
@@ -76,7 +81,6 @@ impl<'a> fmt::Display for LoxError<'a> {
             curr_line = curr_line,
             curr_line_ptr = Color::Red.paint(curr_line_ptr)
         );
-
         write!(f, "{}", pretty_err_msg.to_string())
     }
 }

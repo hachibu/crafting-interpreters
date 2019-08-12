@@ -49,22 +49,19 @@ impl Scanner {
             self.scan_token();
         }
 
+        self.push_token(TokenTy::Eof);
+
         match self.error {
-            Some(ref message) => {
-                Err(
-                    LoxError::new(
-                        LoxErrorTy::Syntax,
-                        &message,
-                        &self.source,
-                        &self.source_file,
-                        Position::new(1, self.curr - 1)
-                    )
+            Some(ref message) => Err(
+                LoxError::new(
+                    LoxErrorTy::Syntax,
+                    &message,
+                    &self.source,
+                    &self.source_file,
+                    Position::new(1, self.curr - 1)
                 )
-            },
-            None => {
-                self.push_token(TokenTy::Eof);
-                Ok(self.tokens.clone())
-            }
+            ),
+            None => Ok(self.tokens.clone())
         }
     }
 
@@ -122,10 +119,7 @@ impl Scanner {
                 } else if c.is_alphabetic() {
                     self.scan_identifier()
                 } else {
-                    self.stop(&format!(
-                        "Unexpected character `{}`.",
-                        c
-                    ));
+                    self.stop(&format!("Unexpected character `{}`.", c));
                 }
         }
     }
@@ -135,8 +129,7 @@ impl Scanner {
     }
 
     fn scan_multi_line_comment(&mut self) {
-        while !self.at_end() &&
-              !(self.peek_eq('*') && self.peek_next_eq('/')) {
+        while !self.at_end() && !(self.peek_eq('*') && self.peek_next_eq('/')) {
             self.next();
         }
 
@@ -166,15 +159,15 @@ impl Scanner {
             self.skip_while(|c| c.is_digit(10));
         }
 
-        let value = self.curr_lexeme().parse::<f64>().unwrap();
-        let token = TokenTy::Number(value);
+        if let Ok(value) = self.curr_lexeme().parse::<f64>() {
+            let token = TokenTy::Number(value);
 
-        self.push_token(token);
+            self.push_token(token);
+        }
     }
 
     fn scan_identifier(&mut self) {
-        while !self.at_end() &&
-              (self.peek().is_alphanumeric() || self.peek_eq('_')) {
+        while !self.at_end() && (self.peek().is_alphanumeric() || self.peek_eq('_')) {
             self.next();
         }
 
@@ -196,8 +189,9 @@ impl Scanner {
                 (length, offset)
             }
         };
+        let token = Token::new(ty, Position::new(length, offset));
 
-        self.tokens.push(Token::new(ty, Position::new(length, offset)));
+        self.tokens.push(token);
     }
 
     fn at_end(&self) -> bool {
