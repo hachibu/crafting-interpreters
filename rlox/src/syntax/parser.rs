@@ -222,21 +222,19 @@ impl Parser {
                 _ => panic!()
             }
         } else {
-            self.error = Some(format!(
-                "Unexpected `{}`.",
-                self.previous().to_string()
-            ));
             Box::new(Expr::Literal(Literal::Nil, self.position()))
         }
     }
 
     fn consume(&mut self, ty: TokenTy, message: &str) -> Token {
-        if !self.check(&ty) {
+        if self.check(&ty) {
+            self.advance()
+        } else {
             if self.error.is_none() {
                 self.error = Some(message.to_string());
             }
+            self.peek()
         }
-        self.advance()
     }
 
     fn match_many(&mut self, tys: &[TokenTy]) -> bool {
@@ -302,4 +300,23 @@ impl Parser {
     }
 }
 
-// TODO: Start adding tests to avoid regressions.
+#[macro_export]
+macro_rules! assert_parse_ok {
+    ($source:expr) => {
+        let mut parser = Parser::new(
+            Scanner::new($source).scan_tokens().expect(""),
+            $source
+        );
+        parser.parse().expect("");
+    };
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn it_parses_empty_grouping() {
+        assert_parse_ok!("();");
+    }
+}

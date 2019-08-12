@@ -123,7 +123,7 @@ impl Scanner {
                     self.scan_identifier()
                 } else {
                     self.stop(&format!(
-                        "Unexpected character: `{}`.",
+                        "Unexpected character `{}`.",
                         c
                     ));
                 }

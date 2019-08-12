@@ -11,9 +11,8 @@ use lox::Lox;
 
 fn main() {
     Lox::new().interpret("
-        print ();
-        var foo = 0;
-        print bar + foo;
+        var a = 1;
+        var b = 2;
+        print a + b + c;
     ");
-    Lox::new().interactive();
 }
